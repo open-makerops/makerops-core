@@ -13,12 +13,13 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
+    env_file: .env
     volumes:
       - ${OLLAMA_DATA_PATH:-./data/models}:/root/.ollama
     ports:
       - "11434:11434"
     environment:
-      OLLAMA_HOST: "0.0.0.0"
+      OLLAMA_HOST: ${OLLAMA_HOST:-0.0.0.0}
     deploy:
       resources:
         reservations:
