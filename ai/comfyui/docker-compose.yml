@@ -1,0 +1,31 @@
+# comfyui — FLUX.1 image generation with node-based workflow UI
+# Project name: comfyui  (managed by start.sh / stop.sh)
+#
+# Exposes:
+#   8188/tcp  — ComfyUI web interface
+#   1111/tcp  — ai-dock service portal (logs, system info, tunnel links)
+#
+# ⚠ REQUIRES the NVIDIA Container Toolkit on the host before running.
+#   See ai/README.md for the prerequisite installation link.
+#
+# UI:            http://localhost:8188
+# Service Portal: http://localhost:1111
+
+services:
+  comfyui:
+    image: ghcr.io/ai-dock/comfyui:latest-cuda
+    container_name: comfyui
+    env_file: .env
+    volumes:
+      - ${COMFYUI_WORKSPACE_PATH:-./data/workspace}:/workspace
+    ports:
+      - "${COMFYUI_PORT_HOST:-8188}:8188"
+      - "${COMFYUI_SERVICEPORTAL_PORT_HOST:-1111}:1111"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped

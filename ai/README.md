@@ -19,12 +19,15 @@ Follow the official installation guide through to the verification step and conf
 | Service | Port | Purpose |
 | ------- | ---- | ------- |
 | [Ollama](https://ollama.com) | [11434](http://localhost:11434) | Local LLM inference — run open-weight models (Llama, Mistral, Gemma, etc.) on GPU |
+| [ComfyUI](https://github.com/ai-dock/comfyui) | [8188](http://localhost:8188) | FLUX.1 image generation — node-based workflow UI for generative AI image creation |
 
 ---
 
 ## Attribution
 
 **Ollama** is open-source software developed and maintained by the [Ollama contributors](https://github.com/ollama/ollama/graphs/contributors), made freely available under the [MIT License](https://github.com/ollama/ollama/blob/main/LICENSE).
+
+**ComfyUI** is open-source software developed and maintained by [comfyanonymous](https://github.com/comfyanonymous) and contributors, made freely available under the [GNU GPL v3 License](https://github.com/comfyanonymous/ComfyUI/blob/master/LICENSE). Docker packaging by the [ai-dock contributors](https://github.com/ai-dock/comfyui/graphs/contributors) under the [MIT License](https://github.com/ai-dock/comfyui/blob/main/LICENSE).
 
 ---
 
