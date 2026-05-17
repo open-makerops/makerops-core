@@ -8,11 +8,6 @@
 networks:
   backend:
 
-volumes:
-  db_data:
-  app_data:
-  app_logs:
-
 services:
 
   # ── Database ─────────────────────────────────────────────────────────────────
@@ -27,7 +22,7 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"
       TZ: "${TZ:-America/Chicago}"
     volumes:
-      - db_data:/var/lib/mysql
+      - ${FREESCOUT_DB_DATA_PATH:-./data/db}:/var/lib/mysql
     networks:
       - backend
     healthcheck:
@@ -61,8 +56,8 @@ services:
       ENABLE_AUTO_UPDATE: "FALSE"
       SETUP_TYPE: AUTO
     volumes:
-      - app_data:/data
-      - app_logs:/www/logs
+      - ${FREESCOUT_APP_DATA_PATH:-./data/app}:/data
+      - ${FREESCOUT_LOGS_PATH:-./data/logs}:/www/logs
     ports:
       - "${FREESCOUT_PORT:-8095}:80"
     networks:

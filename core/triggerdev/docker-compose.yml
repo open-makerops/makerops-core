@@ -10,10 +10,6 @@ x-worker-env: &worker-env
   SECURE_CONNECTION: "false"
   OTEL_EXPORTER_OTLP_ENDPOINT: ${TRIGGER_PROTOCOL:-http}://${TRIGGER_DOMAIN:-localhost:3040}/otel
 
-volumes:
-  db_data:
-  redis_data:
-
 networks:
   trigger_net:
 
@@ -38,7 +34,7 @@ services:
     image: postgres:${POSTGRES_IMAGE_TAG:-16}
     restart: unless-stopped
     volumes:
-      - db_data:/var/lib/postgresql/data/
+      - ${TRIGGERDEV_DB_DATA_PATH:-./data/postgres}:/var/lib/postgresql/data/
     env_file: .env
     networks:
       - trigger_net
@@ -51,7 +47,7 @@ services:
     image: redis:${REDIS_IMAGE_TAG:-7}
     restart: unless-stopped
     volumes:
-      - redis_data:/data
+      - ${TRIGGERDEV_REDIS_DATA_PATH:-./data/redis}:/data
     networks:
       - trigger_net
 

@@ -11,7 +11,7 @@ services:
       - MYSQL_USER=bookstack
       - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
-      - ./db_data:/config
+      - ${BOOKSTACK_DB_DATA_PATH:-./db_data}:/config
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -40,7 +40,7 @@ services:
       - CACHE_DRIVER=database
       - SESSION_DRIVER=database
     volumes:
-      - ./config:/config
+      - ${BOOKSTACK_APP_DATA_PATH:-./config}:/config
     ports:
       - 6875:80
     restart: unless-stopped

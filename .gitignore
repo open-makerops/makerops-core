@@ -2,6 +2,7 @@
 # These are created at runtime and must never be committed.
 **/db_data/
 **/config/
+**/data/
 
 # ── Environment files (belt-and-suspenders; each service dir has its own) ────
 **/.env

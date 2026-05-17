@@ -17,11 +17,6 @@
 networks:
   inventree:
 
-volumes:
-  inventree_data:
-  inventree_pgdata:
-  inventree_cache:
-
 services:
 
   # ── Database ───────────────────────────────────────────────────────────────────
@@ -34,7 +29,7 @@ services:
       POSTGRES_USER: ${INVENTREE_DB_USER:-inventree}
       POSTGRES_PASSWORD: "${INVENTREE_DB_PASSWORD}"
     volumes:
-      - inventree_pgdata:/var/lib/postgresql/data
+      - ${INVENTREE_DB_DATA_PATH:-./data/postgres}:/var/lib/postgresql/data
     networks:
       - inventree
     healthcheck:
@@ -50,7 +45,7 @@ services:
     container_name: inventree_cache
     restart: unless-stopped
     volumes:
-      - inventree_cache:/data
+      - ${INVENTREE_CACHE_DATA_PATH:-./data/redis}:/data
     networks:
       - inventree
     healthcheck:
@@ -70,7 +65,7 @@ services:
     environment:
       INVENTREE_WEB_PORT: "8000"
     volumes:
-      - inventree_data:/home/inventree/data
+      - ${INVENTREE_APP_DATA_PATH:-./data/inventree}:/home/inventree/data
       - ./spa_helper.py:/home/inventree/src/backend/InvenTree/web/templatetags/spa_helper.py:ro
     networks:
       - inventree
@@ -91,7 +86,7 @@ services:
     environment:
       INVENTREE_WEB_PORT: "8000"
     volumes:
-      - inventree_data:/home/inventree/data
+      - ${INVENTREE_APP_DATA_PATH:-./data/inventree}:/home/inventree/data
     networks:
       - inventree
     depends_on:
@@ -108,7 +103,7 @@ services:
       - "${INVENTREE_WEB_PORT:-8096}:80"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - inventree_data:/var/www:ro
+      - ${INVENTREE_APP_DATA_PATH:-./data/inventree}:/var/www:ro
     networks:
       - inventree
     depends_on:

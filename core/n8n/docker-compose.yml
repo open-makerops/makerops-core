@@ -14,11 +14,6 @@
 #
 # UI / API: http://localhost:5678
 
-volumes:
-  db_storage:
-  n8n_storage:
-  redis_storage:
-
 # ── Shared anchors ──────────────────────────────────────────────────────────────
 x-n8n-image: &n8n_image
   image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-stable}
@@ -65,7 +60,7 @@ x-shared: &shared
     EXECUTIONS_DATA_MAX_AGE: "336"
     EXECUTIONS_DATA_PRUNE_MAX_COUNT: "50000"
   volumes:
-    - n8n_storage:/home/node/.n8n
+    - ${N8N_APP_DATA_PATH:-./data/n8n}:/home/node/.n8n
   depends_on:
     redis:
       condition: service_healthy
@@ -87,7 +82,7 @@ services:
       POSTGRES_NON_ROOT_PASSWORD: ${POSTGRES_NON_ROOT_PASSWORD}
       TZ: ${TZ:-America/Chicago}
     volumes:
-      - db_storage:/var/lib/postgresql/data
+      - ${N8N_DB_DATA_PATH:-./data/postgres}:/var/lib/postgresql/data
       - ./init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB:-n8n}"]
@@ -102,7 +97,7 @@ services:
     container_name: n8n_redis
     restart: unless-stopped
     volumes:
-      - redis_storage:/data
+      - ${N8N_REDIS_DATA_PATH:-./data/redis}:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       start_period: 5s

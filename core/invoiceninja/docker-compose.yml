@@ -15,12 +15,6 @@
 networks:
   invoiceninja:
 
-volumes:
-  in_mysql:
-  in_redis:
-  in_public:
-  in_storage:
-
 services:
 
   # ── Database ──────────────────────────────────────────────────────────────────
@@ -34,7 +28,7 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
     volumes:
-      - in_mysql:/var/lib/mysql
+      - ${INVOICENINJA_DB_DATA_PATH:-./data/mysql}:/var/lib/mysql
     networks:
       - invoiceninja
     healthcheck:
@@ -51,7 +45,7 @@ services:
     container_name: in_redis
     restart: unless-stopped
     volumes:
-      - in_redis:/data
+      - ${INVOICENINJA_REDIS_DATA_PATH:-./data/redis}:/data
     networks:
       - invoiceninja
     healthcheck:
@@ -73,8 +67,8 @@ services:
       - ./php/php.ini:/usr/local/etc/php/conf.d/invoiceninja.ini:ro
       - ./php/php-fpm.conf:/usr/local/etc/php-fpm.d/invoiceninja.conf:ro
       - ./supervisor/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf:ro
-      - in_public:/var/www/html/public
-      - in_storage:/var/www/html/storage
+      - ${INVOICENINJA_PUBLIC_PATH:-./data/public}:/var/www/html/public
+      - ${INVOICENINJA_STORAGE_PATH:-./data/storage}:/var/www/html/storage
     networks:
       - invoiceninja
     depends_on:
@@ -93,8 +87,8 @@ services:
     volumes:
       - ./nginx/invoiceninja.conf:/etc/nginx/conf.d/invoiceninja.conf:ro
       - ./nginx/laravel.conf:/etc/nginx/conf.d/default.conf:ro
-      - in_public:/var/www/html/public:ro
-      - in_storage:/var/www/html/storage:ro
+      - ${INVOICENINJA_PUBLIC_PATH:-./data/public}:/var/www/html/public:ro
+      - ${INVOICENINJA_STORAGE_PATH:-./data/storage}:/var/www/html/storage:ro
     networks:
       - invoiceninja
     depends_on:

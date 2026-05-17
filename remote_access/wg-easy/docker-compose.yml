@@ -13,9 +13,6 @@
 #
 # Web UI: http://localhost:8820
 
-volumes:
-  wg_data:
-
 services:
   wg-easy:
     image: ghcr.io/wg-easy/wg-easy:15
@@ -42,7 +39,7 @@ services:
       INIT_ALLOWED_IPS: ${INIT_ALLOWED_IPS:-0.0.0.0/0,::/0}
       WG_HOST: ${WG_HOST:-vpn.cherbone.us}
     volumes:
-      - wg_data:/etc/wireguard
+      - ${WGEASY_DATA_PATH:-./data/wireguard}:/etc/wireguard
       - /lib/modules:/lib/modules:ro
     ports:
       - "${WG_UDP_PORT:-51820}:51820/udp"
