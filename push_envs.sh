@@ -2,11 +2,11 @@
 # Encrypts each service's .env file with age (using ~/.ssh/id_ed25519) and
 # pushes the resulting .age files to the configured GitHub Gist.
 #
-# Gist file naming: <service>.env.age  (flat — no subdirectories)
+# Gist file naming: <concern>.<service>.env.age  (e.g. core.bookstack.env.age)
 # Config:           .envs-gist.conf    (stores GIST_URL)
 # Local gist clone: .envs-gist/
 #
-# See README.md → "Environment Sync" for first-time setup instructions.
+# See README.md → "Environment File Management" for first-time setup instructions.
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -66,14 +66,17 @@ fi
 
 # ── Encrypt and stage each service's .env ─────────────────────────────────────
 PUSHED=0
-for svc_path in */; do
-    svc="${svc_path%/}"
-    [[ ! -f "$svc_path.env" ]] && continue
-
-    out="$GIST_DIR/$svc.env.age"
-    echo "  Encrypting $svc/.env → $out"
-    age --recipient "$(cat "$AGE_PUB")" --output "$out" "$svc_path.env"
-    PUSHED=$((PUSHED + 1))
+for concern in core remote_access ai; do
+    [[ ! -d "$concern" ]] && continue
+    for svc_path in "$concern"/*/; do
+        [[ ! -d "$svc_path" ]] && continue
+        [[ ! -f "${svc_path}.env" ]] && continue
+        svc="$(basename "${svc_path%/}")"
+        out="$GIST_DIR/$concern.$svc.env.age"
+        echo "  Encrypting $concern/$svc/.env → $(basename "$out")"
+        age --recipient "$(cat "$AGE_PUB")" --output "$out" "${svc_path}.env"
+        PUSHED=$((PUSHED + 1))
+    done
 done
 
 if [[ $PUSHED -eq 0 ]]; then

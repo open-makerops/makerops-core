@@ -1,0 +1,32 @@
+# ollama — Local LLM inference server
+# Project name: ollama  (managed by start.sh / stop.sh)
+#
+# Exposes:
+#   11434/tcp — Ollama REST API (model inference and management)
+#
+# ⚠ REQUIRES the NVIDIA Container Toolkit on the host before running.
+#   See ai/README.md for the prerequisite installation link.
+#
+# API: http://localhost:11434
+
+volumes:
+  ollama_data:
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+      OLLAMA_HOST: "0.0.0.0"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped

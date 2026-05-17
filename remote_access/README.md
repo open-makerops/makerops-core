@@ -36,7 +36,7 @@ If you have not already set up an SSH key for GitHub, follow the official guide:
 
 **[Connecting to GitHub with SSH →](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)**
 
-The guide covers key generation, adding the key to `ssh-agent`, and registering the public key with your account. The standard `ed25519` key it produces (`~/.ssh/id_ed25519`) is also used by the optional environment (.env) file management scripts (`push_envs.sh` / `pull_envs.sh`) described in the main [README.md](README.md) — a convenient secondary benefit of a practice worth establishing regardless.
+The guide covers key generation, adding the key to `ssh-agent`, and registering the public key with your account. The standard `ed25519` key it produces (`~/.ssh/id_ed25519`) is also used by the optional environment (.env) file management scripts (`push_envs.sh` / `pull_envs.sh`) described in the main [README.md](../README.md) — a convenient secondary benefit of a practice worth establishing regardless.
 
 ---
 

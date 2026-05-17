@@ -17,7 +17,9 @@ Idle RAM and base storage are measured with all services running and only an ini
 | [trigger.dev](https://trigger.dev) | [3040](http://localhost:3040) | Background jobs and workflow execution | ~715 MB | ~75 MB |
 | **Total** | | | **~6.7 GB** | **~1.2 GB** |
 
-Supporting infrastructure for remote access to this host (WireGuard VPN, Cloudflare DDNS, SSH key setup) is documented in [REMOTE_ACCESS.md](REMOTE_ACCESS.md). Additional operational concerns will follow the same pattern as separate documents.
+Supporting infrastructure for remote access to this host (WireGuard VPN, Cloudflare DDNS, SSH key setup) is documented in [remote_access/README.md](remote_access/README.md).
+
+AI services for local LLM inference and agent workflows are documented in [ai/README.md](ai/README.md). These services run open-weight language models (Llama, Mistral, Gemma, and others) entirely on-premise — no API keys, no data leaving the host, no per-token costs. They integrate directly with n8n for automated AI workflows and are intended to complement the core stack rather than run alongside it at all times. **GPU required:** the NVIDIA Container Toolkit must be installed on the host before running any AI service.
 
 ## Total System Requirements
 
@@ -68,13 +70,13 @@ Each service is configured via a `.env` file in its directory. These files hold 
 
 | Service | Config file | Key variables |
 | ------- | ----------- | ------------- |
-| BookStack | `bookstack/.env` | `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD` |
-| n8n | `n8n/.env` | `POSTGRES_PASSWORD`, `POSTGRES_NON_ROOT_PASSWORD` |
-| FreeScout | `freescout/.env` | `DB_PASSWORD`, `ADMIN_EMAIL`, `ADMIN_PASS` |
-| Invoice Ninja | `invoiceninja/.env` | `DB_PASSWORD`, `DB_ROOT_PASSWORD`, `IN_USER_EMAIL`, `IN_PASSWORD` |
-| InvenTree | `inventree/.env` | `INVENTREE_DB_PASSWORD`, `INVENTREE_ADMIN_PASSWORD` |
-| Plane | `plane/.env` | `POSTGRES_PASSWORD`, `SECRET_KEY`, `RABBITMQ_PASSWORD` |
-| trigger.dev | `triggerdev/.env` | `POSTGRES_PASSWORD`, `ENCRYPTION_KEY`, `MAGIC_LINK_SECRET`, `SESSION_SECRET` |
+| BookStack | `core/bookstack/.env` | `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD` |
+| n8n | `core/n8n/.env` | `POSTGRES_PASSWORD`, `POSTGRES_NON_ROOT_PASSWORD` |
+| FreeScout | `core/freescout/.env` | `DB_PASSWORD`, `ADMIN_EMAIL`, `ADMIN_PASS` |
+| Invoice Ninja | `core/invoiceninja/.env` | `DB_PASSWORD`, `DB_ROOT_PASSWORD`, `IN_USER_EMAIL`, `IN_PASSWORD` |
+| InvenTree | `core/inventree/.env` | `INVENTREE_DB_PASSWORD`, `INVENTREE_ADMIN_PASSWORD` |
+| Plane | `core/plane/.env` | `POSTGRES_PASSWORD`, `SECRET_KEY`, `RABBITMQ_PASSWORD` |
+| trigger.dev | `core/triggerdev/.env` | `POSTGRES_PASSWORD`, `ENCRYPTION_KEY`, `MAGIC_LINK_SECRET`, `SESSION_SECRET` |
 
 An optional gist-based utility for syncing `.env` files between machines is described in [Environment File Management](#environment-file-management-optional) below.
 
@@ -88,7 +90,7 @@ This is useful for bootstrapping the stack on a new machine from a fully-configu
 
 ### Requirements
 
-- **SSH `ed25519` key** registered with GitHub — see [REMOTE_ACCESS.md → SSH Keys](REMOTE_ACCESS.md#ssh-keys). Setting up SSH for GitHub is a general security practice independent of this flow.
+- **SSH `ed25519` key** registered with GitHub — see [remote_access/README.md → SSH Keys](remote_access/README.md#ssh-keys). Setting up SSH for GitHub is a general security practice independent of this flow.
 - **`age` encryption tool** — see the [age installation guide](https://github.com/FiloSottile/age?tab=readme-ov-file#installation). Packages are available for all major systems (`apt install age`, `brew install age`, etc.).
 
 ### Gist setup (one time)
@@ -109,7 +111,7 @@ These steps are specific to this flow and not covered elsewhere:
 ./pull_envs.sh
 ```
 
-Both scripts auto-discover service directories. `push_envs.sh` encrypts every subdirectory that contains a `.env`; `pull_envs.sh` decrypts every `<service>.env.age` found in the gist into the matching local service directory. Existing local `.env` files are overwritten on pull. The gist uses a flat file structure with one file per service: `<service>.env.age`.
+Both scripts auto-discover service directories across the `core/`, `remote_access/`, and `ai/` concern areas. `push_envs.sh` encrypts every service directory that contains a `.env`; `pull_envs.sh` decrypts every matching file from the gist back into the appropriate service directory. Existing local `.env` files are overwritten on pull. The gist uses a flat file structure with one file per service: `<concern>.<service>.env.age` (e.g. `core.bookstack.env.age`).
 
 ---
 
@@ -122,80 +124,80 @@ Both scripts auto-discover service directories. `push_envs.sh` encrypts every su
 ## Quick Start
 
 ```bash
-# Start all services
-./start-all.sh
+# Start all core services
+./core/start-all.sh
 
-# Stop all services
-./stop-all.sh
+# Stop all core services
+./core/stop-all.sh
 ```
 
 Individual service control:
 
 ```bash
-cd bookstack && ./start.sh
-cd bookstack && ./stop.sh
+cd core/bookstack && ./start.sh
+cd core/bookstack && ./stop.sh
 
-cd n8n && ./start.sh
-cd n8n && ./stop.sh
+cd core/n8n && ./start.sh
+cd core/n8n && ./stop.sh
 
-cd freescout && ./start.sh
-cd freescout && ./stop.sh
+cd core/freescout && ./start.sh
+cd core/freescout && ./stop.sh
 
-cd invoiceninja && ./start.sh
-cd invoiceninja && ./stop.sh
+cd core/invoiceninja && ./start.sh
+cd core/invoiceninja && ./stop.sh
 
-cd inventree && ./start.sh
-cd inventree && ./stop.sh
+cd core/inventree && ./start.sh
+cd core/inventree && ./stop.sh
 
-cd plane && ./start.sh
-cd plane && ./stop.sh
+cd core/plane && ./start.sh
+cd core/plane && ./stop.sh
 
-cd triggerdev && ./start.sh
-cd triggerdev && ./stop.sh
+cd core/triggerdev && ./start.sh
+cd core/triggerdev && ./stop.sh
 ```
 
 ## First Run Notes
 
 ### BookStack
 
-- `APP_KEY` is auto-generated and saved to `bookstack/.env` on first start
+- `APP_KEY` is auto-generated and saved to `core/bookstack/.env` on first start
 - Default login: `admin@admin.com` / `password` — change immediately
 
 ### n8n
 
-- `N8N_ENCRYPTION_KEY` and `RUNNERS_AUTH_TOKEN` are auto-generated and saved to `n8n/.env` on first start
+- `N8N_ENCRYPTION_KEY` and `RUNNERS_AUTH_TOKEN` are auto-generated and saved to `core/n8n/.env` on first start
 - Create your owner account on first visit to `http://localhost:5678`
-- **Keep `n8n/.env` backed up** — losing `N8N_ENCRYPTION_KEY` means losing access to all stored credentials
+- **Keep `core/n8n/.env` backed up** — losing `N8N_ENCRYPTION_KEY` means losing access to all stored credentials
 
 ### FreeScout
 
 - Database schema and admin account are created automatically on first start (~2–5 minutes)
-- Set `ADMIN_EMAIL` and `ADMIN_PASS` in `freescout/.env` before first run — these cannot be changed via `.env` after the database is initialised
-- Default login: values of `ADMIN_EMAIL` / `ADMIN_PASS` in `freescout/.env`
+- Set `ADMIN_EMAIL` and `ADMIN_PASS` in `core/freescout/.env` before first run — these cannot be changed via `.env` after the database is initialised
+- Default login: values of `ADMIN_EMAIL` / `ADMIN_PASS` in `core/freescout/.env`
 
 ### Invoice Ninja
 
-- `APP_KEY`, `DB_PASSWORD`, `DB_ROOT_PASSWORD`, and `IN_PASSWORD` are auto-generated and saved to `invoiceninja/.env` on first start
-- Set `IN_USER_EMAIL` in `invoiceninja/.env` before first run to set the admin email
+- `APP_KEY`, `DB_PASSWORD`, `DB_ROOT_PASSWORD`, and `IN_PASSWORD` are auto-generated and saved to `core/invoiceninja/.env` on first start
+- Set `IN_USER_EMAIL` in `core/invoiceninja/.env` before first run to set the admin email
 - **Do not change `APP_KEY` after first run** — it encrypts stored credentials and tokens
-- Default login: value of `IN_USER_EMAIL` / `IN_PASSWORD` in `invoiceninja/.env`
+- Default login: value of `IN_USER_EMAIL` / `IN_PASSWORD` in `core/invoiceninja/.env`
 
 ### InvenTree
 
-- `INVENTREE_DB_PASSWORD` and `INVENTREE_ADMIN_PASSWORD` are auto-generated and saved to `inventree/.env` on first start
+- `INVENTREE_DB_PASSWORD` and `INVENTREE_ADMIN_PASSWORD` are auto-generated and saved to `core/inventree/.env` on first start
 - `secret_key.txt` is auto-generated inside the data volume on first start — **back it up and never delete it**, as it encrypts stored credentials
 - Database migrations run automatically on startup (`INVENTREE_AUTO_UPDATE=True`)
-- Default login: `admin` / value of `INVENTREE_ADMIN_PASSWORD` in `inventree/.env`
+- Default login: `admin` / value of `INVENTREE_ADMIN_PASSWORD` in `core/inventree/.env`
 
 ### Plane
 
-- `SECRET_KEY`, `LIVE_SERVER_SECRET_KEY`, `POSTGRES_PASSWORD`, `RABBITMQ_PASSWORD`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY` are auto-generated and saved to `plane/.env` on first start
+- `SECRET_KEY`, `LIVE_SERVER_SECRET_KEY`, `POSTGRES_PASSWORD`, `RABBITMQ_PASSWORD`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY` are auto-generated and saved to `core/plane/.env` on first start
 - Create your workspace and owner account on first visit to `http://localhost:8100`
 - **Do not change `SECRET_KEY` after first run** — it invalidates all active sessions
 
 ### trigger.dev
 
-- `POSTGRES_PASSWORD`, `MAGIC_LINK_SECRET`, `SESSION_SECRET`, `ENCRYPTION_KEY`, `PROVIDER_SECRET`, and `COORDINATOR_SECRET` are auto-generated and saved to `triggerdev/.env` on first start
+- `POSTGRES_PASSWORD`, `MAGIC_LINK_SECRET`, `SESSION_SECRET`, `ENCRYPTION_KEY`, `PROVIDER_SECRET`, and `COORDINATOR_SECRET` are auto-generated and saved to `core/triggerdev/.env` on first start
 - Uses magic link authentication — on first visit enter your email, then retrieve the login link from `docker logs trigger_webapp`
 - **Never change `ENCRYPTION_KEY`, `MAGIC_LINK_SECRET`, or `SESSION_SECRET` after first run** — changing these breaks stored data or logs out all users
 - The `docker-provider` and `coordinator` containers mount `/var/run/docker.sock` to spawn task worker containers on demand
@@ -207,13 +209,13 @@ All service data is stored in Docker named volumes scoped to each project. Stopp
 To remove a service's data volumes (destructive — cannot be undone):
 
 ```bash
-cd <service> && ./stop.sh --volumes
+cd core/<service> && ./stop.sh --volumes
 ```
 
-To remove all data across all services:
+To remove all data across all core services:
 
 ```bash
-./stop-all.sh --volumes
+./core/stop-all.sh --volumes
 ```
 
 ## Architecture Notes

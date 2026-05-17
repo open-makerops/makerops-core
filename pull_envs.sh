@@ -3,14 +3,14 @@
 # with age (using ~/.ssh/id_ed25519), and writes each to the matching service
 # directory as .env.
 #
-# Gist file naming: <service>.env.age  (flat — no subdirectories)
+# Gist file naming: <concern>.<service>.env.age  (e.g. core.bookstack.env.age)
 # Config:           .envs-gist.conf    (stores GIST_URL)
 # Local gist clone: .envs-gist/
 #
 # Existing local .env files are overwritten silently.
 # Gist entries with no matching local service directory are skipped with a warning.
 #
-# See README.md → "Environment Sync" for first-time setup instructions.
+# See README.md → "Environment File Management" for first-time setup instructions.
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -67,16 +67,19 @@ SKIPPED=0
 shopt -s nullglob
 for age_file in "$GIST_DIR"/*.env.age; do
     filename="$(basename "$age_file")"
-    svc="${filename%.env.age}"
+    # filename format: <concern>.<service>.env.age
+    rest="${filename%.env.age}"
+    concern="${rest%%.*}"
+    svc="${rest#*.}"
 
-    if [[ ! -d "$svc" ]]; then
-        echo "  SKIP: no local directory for service '$svc' (file: $filename)"
+    if [[ ! -d "$concern/$svc" ]]; then
+        echo "  SKIP: no local directory for '$concern/$svc' (file: $filename)"
         SKIPPED=$((SKIPPED + 1))
         continue
     fi
 
-    echo "  Decrypting $filename → $svc/.env"
-    age --decrypt --identity "$AGE_KEY" --output "$svc/.env" "$age_file"
+    echo "  Decrypting $filename → $concern/$svc/.env"
+    age --decrypt --identity "$AGE_KEY" --output "$concern/$svc/.env" "$age_file"
     PULLED=$((PULLED + 1))
 done
 shopt -u nullglob
