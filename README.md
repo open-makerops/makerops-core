@@ -1,5 +1,7 @@
 # MakerOps Core
 
+![MakerOps Core](assets/images/makerops-core-hero.png)
+
 A collection of self-hosted, open-source services for manufacturing operations, deployed locally via Docker Compose. Each service runs as an independent, fully isolated Docker Compose project.
 
 Services are organized by labor area:
