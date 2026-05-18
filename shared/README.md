@@ -11,8 +11,6 @@ Cross-functional services used by all disciplines. Includes the company knowledg
 | [Plane](https://plane.so) | [8100](http://localhost:8100) | Project management and work tracking | ~1.85 GB | ~80 MB |
 | [trigger.dev](https://trigger.dev) | [3040](http://localhost:3040) | Background jobs and workflow execution | ~715 MB | ~75 MB |
 
-> **BookStack** has been superseded by Outline. Its data and configuration remain in `bookstack/` and are preserved until you are ready to decommission it: `cd bookstack && ./teardown.sh`
-
 ---
 
 See each service's `README.md` for setup instructions and first-run notes.
