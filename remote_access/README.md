@@ -1,6 +1,6 @@
 # Remote Access
 
-Supporting infrastructure for reaching the manufacturing stack host from outside the local network. These services are operational utilities — not part of the core stack — but are a provided for remote access to services running on this machine.
+Supporting infrastructure for reaching the MakerOps Core host from outside the local network. These services are operational utilities — not part of the core stack — but are a provided for remote access to services running on this machine.
 
 ## Services
 

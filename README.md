@@ -1,4 +1,4 @@
-# Manufacturing Tools Stack
+# MakerOps Core
 
 A collection of self-hosted, open-source services for manufacturing operations, deployed locally via Docker Compose. Each service runs as an independent, fully isolated Docker Compose project.
 
