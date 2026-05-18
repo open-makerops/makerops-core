@@ -8,6 +8,7 @@ Services are organized by labor area:
 - [sales/](sales/README.md) — sales and customer service staff
 - [operations/](operations/README.md) — operations and supply chain staff
 - [shared/](shared/README.md) — cross-functional services used by all disciplines
+- [infrastructure/](infrastructure/README.md) — backend primitives (object storage, etc.)
 
 Supporting infrastructure for remote access to this host (WireGuard VPN, Cloudflare DDNS, SSH key setup) is documented in [remote_access/README.md](remote_access/README.md).
 
@@ -20,13 +21,14 @@ Idle RAM and base storage are measured with all services running and only an ini
 | Service | Port | Purpose | Idle RAM | Base Storage |
 | ------- | ---- | ------- | -------- | ------------ |
 | [n8n](https://n8n.io) | [5678](http://localhost:5678) | Workflow automation — integrates all services | ~470 MB | ~70 MB |
-| [BookStack](https://www.bookstackapp.com) | [6875](http://localhost:6875) | Documentation and knowledge base | ~240 MB | ~165 MB |
+| [Outline](https://www.getoutline.com) | [3000](http://localhost:3000) | Collaborative knowledge base and wiki | ~350 MB | ~100 MB |
 | [FreeScout](https://freescout.net) | [8095](http://localhost:8095) | Help desk and shared inbox | ~330 MB | ~175 MB |
 | [Invoice Ninja](https://invoiceninja.com) | [8092](http://localhost:8092) | Accounting and invoicing | ~1.1 GB | ~470 MB |
 | [InvenTree](https://inventree.org) | [8096](http://localhost:8096) | Inventory and parts management | ~1.95 GB | ~140 MB |
 | [Plane](https://plane.so) | [8100](http://localhost:8100) | Project management and work tracking | ~1.85 GB | ~80 MB |
 | [trigger.dev](https://trigger.dev) | [3040](http://localhost:3040) | Background jobs and workflow execution | ~715 MB | ~75 MB |
-| **Total** | | | **~6.7 GB** | **~1.2 GB** |
+| [Garage](https://garagehq.deuxfleurs.fr) | [3900](http://localhost:3900) | S3-compatible object store (Outline backend) | ~30 MB | ~15 MB |
+| **Total** | | | **~6.8 GB** | **~1.1 GB** |
 
 ## Total System Requirements
 
@@ -34,8 +36,8 @@ Idle RAM and base storage are measured with all services running and only an ini
 
 | Resource | Value |
 | -------- | ----- |
-| Idle RAM | ~6.7 GB |
-| Base volume storage | ~1.2 GB |
+| Idle RAM | ~6.8 GB |
+| Base volume storage | ~1.1 GB |
 | Container images (disk) | ~17 GB |
 
 ### Minimum and recommended host resources
@@ -46,7 +48,7 @@ Idle RAM and base storage are measured with all services running and only an ini
 | Disk | 25 GB SSD | 50 GB SSD |
 | CPU | 2 cores | 4 cores |
 
-**RAM**: The stack uses ~6.7 GB at idle. An 8 GB host leaves ~1.3 GB for the OS — workable but tight under active use. 16 GB provides comfortable headroom for concurrent users, background job execution, and memory spikes during file uploads or heavy queries.
+**RAM**: The stack uses ~6.8 GB at idle. An 8 GB host leaves ~1.2 GB for the OS — workable but tight under active use. 16 GB provides comfortable headroom for concurrent users, background job execution, and memory spikes during file uploads or heavy queries.
 
 The largest single consumer is InvenTree at ~1.95 GB. Its background worker (`qcluster`) forks multiple Python processes that each load the full Django application into memory; this is expected behavior and reflects the idle baseline, not a memory leak.
 
@@ -57,17 +59,18 @@ The largest single consumer is InvenTree at ~1.95 GB. Its background worker (`qc
 | Service | Primary growth drivers |
 | ------- | ---------------------- |
 | n8n | Workflow execution logs — prune via Settings → Log Pruning or set `EXECUTIONS_DATA_MAX_AGE` in `.env` |
-| BookStack | Page content, file attachments, and image uploads |
+| Outline | Document content and file attachments; objects are stored in Garage S3 — scales with wiki content |
 | FreeScout | Email history and file attachments |
 | Invoice Ninja | Invoice PDFs and documents; base includes ~245 MB of static app assets that don't change |
 | InvenTree | Parts database, parts images, and document attachments — scales with inventory size |
 | Plane | Project data and file uploads — scales with team and issue volume |
 | trigger.dev | Job run history — prune via the dashboard or `npx trigger.dev runs delete` |
+| Garage | S3 objects from Outline and future services — scales with binary content stored |
 
 For storage sizing guidance by database engine:
 
-- [PostgreSQL disk usage](https://www.postgresql.org/docs/current/diskusage.html) — used by n8n, InvenTree, Plane, trigger.dev
-- [MySQL / MariaDB table sizing](https://mariadb.com/kb/en/optimizing-table_size/) — used by BookStack, FreeScout, Invoice Ninja
+- [PostgreSQL disk usage](https://www.postgresql.org/docs/current/diskusage.html) — used by n8n, Outline, InvenTree, Plane, trigger.dev
+- [MySQL / MariaDB table sizing](https://mariadb.com/kb/en/optimizing-table_size/) — used by FreeScout, Invoice Ninja
 
 ## Service Environment Files
 
@@ -77,8 +80,9 @@ Each service is configured via a `.env` file in its directory. These files hold 
 
 | Service | Config file | Key variables |
 | ------- | ----------- | ------------- |
-| BookStack | `shared/bookstack/.env` | `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD` |
+| Garage | `infrastructure/garage/.env` | `GARAGE_ACCESS_KEY_ID`, `GARAGE_SECRET_ACCESS_KEY` |
 | n8n | `shared/n8n/.env` | `POSTGRES_PASSWORD`, `POSTGRES_NON_ROOT_PASSWORD` |
+| Outline | `shared/outline/.env` | `DB_PASSWORD`, `SECRET_KEY`, `UTILS_SECRET` |
 | FreeScout | `sales/freescout/.env` | `DB_PASSWORD`, `ADMIN_EMAIL`, `ADMIN_PASS` |
 | Invoice Ninja | `accounting/invoiceninja/.env` | `DB_PASSWORD`, `DB_ROOT_PASSWORD`, `IN_USER_EMAIL`, `IN_PASSWORD` |
 | InvenTree | `operations/inventree/.env` | `INVENTREE_DB_PASSWORD`, `INVENTREE_ADMIN_PASSWORD` |
@@ -101,24 +105,34 @@ Each service is started and stopped from its own directory:
 cd accounting/invoiceninja && ./start.sh
 cd sales/freescout && ./start.sh
 cd operations/inventree && ./start.sh
-cd shared/bookstack && ./start.sh
+cd infrastructure/garage && ./start.sh
 cd shared/n8n && ./start.sh
+cd shared/outline && ./start.sh   # start Garage first
 cd shared/plane && ./start.sh
 cd shared/triggerdev && ./start.sh
 ```
 
 ## First Run Notes
 
-### BookStack
+### Garage
 
-- `APP_KEY` is auto-generated and saved to `shared/bookstack/.env` on first start
-- Default login: `admin@admin.com` / `password` — change immediately
+- `GARAGE_ACCESS_KEY_ID` and `GARAGE_SECRET_ACCESS_KEY` are auto-generated and saved to `infrastructure/garage/.env` on first start
+- The single-node cluster is initialized automatically (layout assign + apply)
+- Must be running before starting Outline
 
 ### n8n
 
 - `N8N_ENCRYPTION_KEY` and `RUNNERS_AUTH_TOKEN` are auto-generated and saved to `shared/n8n/.env` on first start
 - Create your owner account on first visit to `http://localhost:5678`
 - **Keep `shared/n8n/.env` backed up** — losing `N8N_ENCRYPTION_KEY` means losing access to all stored credentials
+
+### Outline
+
+- `SECRET_KEY`, `UTILS_SECRET`, and `DB_PASSWORD` are auto-generated and saved to `shared/outline/.env` on first start
+- S3 credentials are auto-populated from `infrastructure/garage/.env` — **start Garage first**
+- Requires an auth provider before any user can sign in: configure `OIDC_*` vars for OIDC (Keycloak, coming soon) or `SMTP_*` vars for magic-link email login
+- The first user to sign in becomes the workspace owner — there are no default credentials
+- **Do not change `SECRET_KEY` or `UTILS_SECRET` after first run** — they encrypt sessions and stored data
 
 ### FreeScout
 
@@ -169,8 +183,9 @@ Each service is a separate Docker Compose project with its own network, volumes,
 
 | Service | Docker project | Database |
 | ------- | ------------- | -------- |
-| BookStack | `bookstack` | MariaDB 11 |
+| Garage | `garage` | — (is the object store) |
 | n8n | `n8n` | PostgreSQL 17 |
+| Outline | `outline` | PostgreSQL 17 + Redis 7 |
 | FreeScout | `freescout` | MariaDB 11 |
 | Invoice Ninja | `invoiceninja` | MySQL 8 |
 | InvenTree | `inventree` | PostgreSQL 17 |
