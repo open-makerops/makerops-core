@@ -7,9 +7,11 @@ Cross-functional services used by all disciplines. Includes the company knowledg
 | Service | Port | Purpose | Idle RAM | Base Storage |
 | ------- | ---- | ------- | -------- | ------------ |
 | [n8n](https://n8n.io) | [5678](http://localhost:5678) | Workflow automation — integrates all services | ~470 MB | ~70 MB |
-| [BookStack](https://www.bookstackapp.com) | [6875](http://localhost:6875) | Documentation and knowledge base | ~240 MB | ~165 MB |
+| [Outline](https://www.getoutline.com) | [3000](http://localhost:3000) | Collaborative knowledge base and wiki | ~350 MB | ~100 MB |
 | [Plane](https://plane.so) | [8100](http://localhost:8100) | Project management and work tracking | ~1.85 GB | ~80 MB |
 | [trigger.dev](https://trigger.dev) | [3040](http://localhost:3040) | Background jobs and workflow execution | ~715 MB | ~75 MB |
+
+> **BookStack** has been superseded by Outline. Its data and configuration remain in `bookstack/` and are preserved until you are ready to decommission it: `cd bookstack && ./teardown.sh`
 
 ---
 

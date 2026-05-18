@@ -1,0 +1,79 @@
+# outline — Collaborative knowledge base and wiki
+# Project name: outline  (managed by start.sh / stop.sh)
+#
+# Architecture:
+#   outline_db     — PostgreSQL 17 (primary database; migrations run on startup)
+#   outline_redis  — Redis 7 (cache + real-time collaboration)
+#   outline        — Outline app
+#
+# S3 storage:  infrastructure/garage (port 3900) — start Garage first
+# Auth:        infrastructure/keycloak (port 8080, coming soon) — configure OIDC_* in .env
+#
+# UI: http://localhost:3000
+
+services:
+
+  # ── Database ──────────────────────────────────────────────────────────────────
+  outline_db:
+    image: postgres:17
+    container_name: outline_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: outline
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: outline
+      TZ: ${TZ:-America/Chicago}
+    volumes:
+      - ${OUTLINE_DB_DATA_PATH:-./data/postgres}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U outline -d outline"]
+      start_period: 10s
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Cache + real-time ─────────────────────────────────────────────────────────
+  outline_redis:
+    image: redis:7-alpine
+    container_name: outline_redis
+    restart: unless-stopped
+    volumes:
+      - ${OUTLINE_REDIS_DATA_PATH:-./data/redis}:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── App ───────────────────────────────────────────────────────────────────────
+  outline:
+    image: docker.getoutline.com/outlinewiki/outline:${OUTLINE_VERSION:-latest}
+    container_name: outline
+    restart: unless-stopped
+    depends_on:
+      outline_db:
+        condition: service_healthy
+      outline_redis:
+        condition: service_healthy
+    # env_file passes all .env vars to the container — OIDC and SMTP vars reach
+    # Outline only when they are uncommented and filled in the .env file.
+    env_file: .env
+    environment:
+      # Assembled from component vars so DB_PASSWORD stays the single source of truth
+      DATABASE_URL: postgres://outline:${DB_PASSWORD}@outline_db:5432/outline
+      REDIS_URL: redis://outline_redis:6379
+      NODE_ENV: production
+      FORCE_HTTPS: "false"
+    ports:
+      - "${OUTLINE_PORT_HOST:-3000}:3000"
+    extra_hosts:
+      # Allows the container to reach Garage (port 3900) and Keycloak (port 8080),
+      # which run as separate Docker Compose projects on the host.
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/_health || exit 1"]
+      start_period: 60s
+      interval: 30s
+      timeout: 10s
+      retries: 3
