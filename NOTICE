@@ -1,0 +1,90 @@
+MakerOps Core
+Copyright (c) 2026 Sean Cherbone
+
+This repository contains configuration and orchestration files for deploying
+the following third-party open-source software. Each project is the work of
+its respective authors and contributors and is governed by its own license.
+
+-------------------------------------------------------------------------------
+
+n8n
+https://github.com/n8n-io/n8n
+License: Sustainable Use License
+https://github.com/n8n-io/n8n/blob/master/LICENSE.md
+
+Outline
+https://github.com/outline/outline
+License: Business Source License 1.1 (server), MIT (client)
+https://github.com/outline/outline/blob/main/LICENSE
+
+FreeScout
+https://github.com/freescout-help-desk/freescout
+License: GNU Affero General Public License v3.0
+https://github.com/freescout-help-desk/freescout/blob/dist/LICENSE
+
+Invoice Ninja
+https://github.com/invoiceninja/invoiceninja
+License: Elastic License 2.0
+https://github.com/invoiceninja/invoiceninja/blob/master/LICENSE
+
+InvenTree
+https://github.com/inventree/InvenTree
+License: MIT
+https://github.com/inventree/InvenTree/blob/master/LICENSE
+
+Plane
+https://github.com/makeplane/plane
+License: GNU Affero General Public License v3.0
+https://github.com/makeplane/plane/blob/master/LICENSE
+
+trigger.dev
+https://github.com/triggerdotdev/trigger.dev
+License: GNU Affero General Public License v3.0
+https://github.com/triggerdotdev/trigger.dev/blob/main/LICENSE
+
+Garage
+https://git.deuxfleurs.fr/Deuxfleurs/garage
+License: GNU Affero General Public License v3.0
+https://git.deuxfleurs.fr/Deuxfleurs/garage/src/branch/main/LICENSE
+
+wg-easy
+https://github.com/wg-easy/wg-easy
+License: GNU Affero General Public License v3.0
+https://github.com/wg-easy/wg-easy/blob/master/LICENSE
+
+cloudflare-ddns
+https://github.com/timothyjmiller/cloudflare-ddns
+License: MIT
+https://github.com/timothyjmiller/cloudflare-ddns/blob/master/LICENSE
+
+Ollama
+https://github.com/ollama/ollama
+License: MIT
+https://github.com/ollama/ollama/blob/main/LICENSE
+
+ComfyUI
+https://github.com/comfyanonymous/ComfyUI
+License: GNU General Public License v3.0
+https://github.com/comfyanonymous/ComfyUI/blob/master/LICENSE
+
+FLUX.1 models (Black Forest Labs)
+https://huggingface.co/black-forest-labs
+FLUX.1-dev: FLUX.1-dev Non-Commercial License
+https://huggingface.co/black-forest-labs/FLUX.1-dev/blob/main/LICENSE.md
+FLUX.1-schnell: Apache License 2.0
+https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/main/LICENSE.md
+
+-------------------------------------------------------------------------------
+
+Supporting infrastructure components:
+
+PostgreSQL — PostgreSQL License — https://www.postgresql.org/about/licence/
+MySQL — GNU General Public License v2 — https://www.mysql.com/about/legal/licensing/
+MariaDB — GNU General Public License v2 — https://mariadb.com/kb/en/mariadb-license/
+Redis — BSD 3-Clause (v6) / Redis Source Available License (v7+) — https://redis.io/legal/licenses/
+Valkey — BSD 3-Clause — https://github.com/valkey-io/valkey/blob/unstable/LICENSE.txt
+RabbitMQ — Mozilla Public License 2.0 — https://www.rabbitmq.com/mpl.html
+MinIO — GNU Affero General Public License v3.0 — https://github.com/minio/minio/blob/master/LICENSE
+Nginx — BSD 2-Clause — https://nginx.org/LICENSE
+Caddy — Apache License 2.0 — https://github.com/caddyserver/caddy/blob/master/LICENSE
+ElectricSQL — GNU Affero General Public License v3.0 — https://github.com/electric-sql/electric/blob/main/LICENSE

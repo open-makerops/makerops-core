@@ -54,7 +54,7 @@ Idle RAM and base storage are measured with all services running and only an ini
 
 The largest single consumer is InvenTree at ~1.95 GB. Its background worker (`qcluster`) forks multiple Python processes that each load the full Django application into memory; this is expected behavior and reflects the idle baseline, not a memory leak.
 
-**Disk**: Container images (~17 GB) are a one-time pull per version and do not grow during operation. Volume storage starts at ~1.2 GB with no user data and grows as the stack is used.
+**Disk**: Container images (~17 GB) are a one-time pull per version and do not grow during operation. Volume storage starts at ~1.2 GB with no user data and grows as the stack is used. Configuration options are available per service to designate data storage location.
 
 ### Volume storage growth
 
@@ -193,3 +193,12 @@ Each service is a separate Docker Compose project with its own network, volumes,
 | InvenTree | `inventree` | PostgreSQL 17 |
 | Plane | `plane` | PostgreSQL 15 |
 | trigger.dev | `triggerdev` | PostgreSQL 16 |
+
+## License
+
+MakerOps Core is licensed under the [MakerOps Software License v1.0](LICENSE).
+
+**Permitted:** Personal use, educational use, internal business operations, and setup/consulting services.
+**Prohibited:** Selling or sublicensing the software, integrating it into commercial products sold to others, or offering it as a hosted or managed service.
+
+Third-party software integrated by this stack is governed by its own license. See [NOTICE](NOTICE) for the full list of upstream projects and their licenses.

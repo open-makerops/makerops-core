@@ -1,0 +1,66 @@
+MakerOps Software License
+Version 1.0
+
+Copyright (c) 2026 Sean Cherbone. All rights reserved.
+
+────────────────────────────────────────────────────────────────────────────
+
+GRANT OF RIGHTS
+
+Permission is hereby granted, free of charge, to any person or organization
+obtaining a copy of this software and associated documentation files (the
+"Software"), to use, run, copy, modify, and create derivative works of the
+Software, subject to the conditions below.
+
+────────────────────────────────────────────────────────────────────────────
+
+PERMITTED USES
+
+- Personal and educational use
+- Internal business or organizational operations (using the Software to run
+  your own operations for your own benefit, not for resale or distribution)
+- Non-commercial redistribution of unmodified or modified copies, provided
+  this license is included and the prohibited uses below are not violated
+- Setup, configuration, and integration consulting services — deploying or
+  configuring this Software on behalf of a client for the client's own
+  internal use, where the client is the primary operator of the Software
+
+────────────────────────────────────────────────────────────────────────────
+
+PROHIBITED USES
+
+The following uses are prohibited without the prior written consent of the
+copyright holder:
+
+1. Commercial Distribution
+   Selling, licensing, or sublicensing the Software or any derivative works
+   for monetary compensation.
+
+2. Commercial Integration
+   Incorporating the Software or any substantial portion of it as a
+   dependency, component, or bundled element of a product or service offered,
+   sold, licensed, or otherwise provided to third parties for compensation,
+   regardless of whether this Software is visible to the end user.
+
+3. Managed or Hosted Service
+   Providing the Software or any derivative works to third parties as a
+   hosted, managed, or cloud service where the functionality of the Software
+   is a material part of the service's value.
+
+────────────────────────────────────────────────────────────────────────────
+
+ATTRIBUTION
+
+All copies and derivative works must retain this license text and the
+copyright notice above.
+
+────────────────────────────────────────────────────────────────────────────
+
+DISCLAIMER
+
+THE SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
