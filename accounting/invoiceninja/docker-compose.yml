@@ -76,6 +76,14 @@ services:
         condition: service_healthy
       in-redis:
         condition: service_healthy
+    # Override the image's built-in healthcheck to extend start_period.
+    # First-run DB migrations take ~90 s; 180 s gives comfortable headroom.
+    healthcheck:
+      test: ["CMD-SHELL", "REMOTE_ADDR=127.0.0.1 REQUEST_URI=/health REQUEST_METHOD=GET SCRIPT_FILENAME=/var/www/html/public/index.php cgi-fcgi -bind -connect 127.0.0.1:9000 | grep '{\"status\":\"ok\",\"message\":\"API is healthy\"}'"]
+      start_period: 180s
+      interval: 15s
+      timeout: 10s
+      retries: 5
 
   # ── Web / reverse proxy ────────────────────────────────────────────────────────
   in-nginx:
@@ -95,7 +103,7 @@ services:
       in-app:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/healthcheck"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthcheck"]
       start_period: 30s
       interval: 30s
       timeout: 5s

@@ -62,7 +62,7 @@ echo "Pulling images..."
 docker compose -p "$PROJECT" pull --quiet
 
 echo "Starting services..."
-docker compose -p "$PROJECT" up -d
+docker compose -p "$PROJECT" up -d --wait --wait-timeout 300
 
 # ── Summary ───────────────────────────────────────────────────────────────────
 APP_URL=$(grep "^APP_URL=" .env | cut -d= -f2-)
