@@ -1,0 +1,30 @@
+# garage — S3-compatible object store
+# Project name: garage  (managed by start.sh / stop.sh)
+#
+# Exposes:
+#   3900/tcp — S3 API
+#   3903/tcp — Admin API
+#
+# Garage requires a one-time cluster initialization after first start.
+# start.sh handles this automatically via layout assign/apply.
+# See README.md for manual steps if needed.
+
+services:
+  garage:
+    image: dxflrs/garage:${GARAGE_VERSION:-v2.3.0}
+    container_name: garage
+    env_file: .env
+    restart: unless-stopped
+    ports:
+      - "3900:3900"   # S3 API
+      - "3903:3903"   # Admin API
+    volumes:
+      - ./garage.toml:/etc/garage.toml:ro
+      - ${GARAGE_META_DATA_PATH:-./data/meta}:/var/lib/garage/meta
+      - ${GARAGE_OBJECT_DATA_PATH:-./data/objects}:/var/lib/garage/data
+    healthcheck:
+      test: ["CMD", "/garage", "node", "id"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
