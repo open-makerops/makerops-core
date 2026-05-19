@@ -1,0 +1,36 @@
+# name-proxy — Subdomain reverse proxy for makerops-core services
+# Project name: name-proxy  (managed by start.sh / stop.sh)
+#
+# Maps *.localhost subdomains to services on their host ports so services can
+# be reached by name instead of port number. No app reconfiguration needed.
+#
+# *.localhost resolves to 127.0.0.1 natively on Linux/WSL2 and macOS.
+# On Windows, add a hosts file entry for each subdomain you want to use.
+
+services:
+  name-proxy:
+    image: nginx:alpine
+    container_name: name-proxy
+    restart: unless-stopped
+    ports:
+      - "${PROXY_PORT:-80}:80"
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+    environment:
+      # Scopes envsubst to only these variables so nginx runtime vars
+      # ($host, $remote_addr, etc.) are left untouched in the rendered config.
+      NGINX_ENVSUBST_TEMPLATE_VARS: "N8N_PORT OUTLINE_PORT PLANE_PORT TRIGGERDEV_PORT FREESCOUT_PORT INVOICENINJA_PORT INVENTREE_PORT OLLAMA_PORT COMFYUI_PORT WG_PORT"
+      N8N_PORT: "${N8N_PORT:-5678}"
+      OUTLINE_PORT: "${OUTLINE_PORT:-3000}"
+      PLANE_PORT: "${PLANE_PORT:-8100}"
+      TRIGGERDEV_PORT: "${TRIGGERDEV_PORT:-3040}"
+      FREESCOUT_PORT: "${FREESCOUT_PORT:-8095}"
+      INVOICENINJA_PORT: "${INVOICENINJA_PORT:-8092}"
+      INVENTREE_PORT: "${INVENTREE_PORT:-8096}"
+      OLLAMA_PORT: "${OLLAMA_PORT:-11434}"
+      COMFYUI_PORT: "${COMFYUI_PORT:-8188}"
+      WG_PORT: "${WG_PORT:-8820}"
+    # Allows the container to reach services bound to the host network.
+    # Required on Linux; provided automatically by Docker Desktop on macOS/Windows.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

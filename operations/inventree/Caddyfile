@@ -1,4 +1,4 @@
-:80 {
+:8096 {
 	log {
 		output stdout
 		level INFO
@@ -42,7 +42,9 @@
 			max_size 100MB
 		}
 		reverse_proxy {$INVENTREE_SERVER_ADDR} {
-			header_up X-Forwarded-Host {host}
+			# Always forward the canonical host so Django's SITE_URL check passes
+			# whether the request arrived via name-proxy or direct port access.
+			header_up X-Forwarded-Host {$INVENTREE_CANONICAL_HOST}
 		}
 	}
 }

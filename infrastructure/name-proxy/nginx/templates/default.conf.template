@@ -1,0 +1,86 @@
+# Sets Connection header correctly for mixed WebSocket / plain-HTTP traffic.
+map $http_upgrade $connection_upgrade {
+    default  upgrade;
+    ''       close;
+}
+
+# Shared proxy settings — applied to all server blocks via http-context inheritance.
+proxy_http_version   1.1;
+proxy_set_header     Upgrade            $http_upgrade;
+proxy_set_header     Connection         $connection_upgrade;
+proxy_set_header     Host               $host;
+proxy_set_header     X-Real-IP          $remote_addr;
+proxy_set_header     X-Forwarded-For    $proxy_add_x_forwarded_for;
+proxy_set_header     X-Forwarded-Proto  $scheme;
+proxy_read_timeout   300s;
+client_max_body_size 100m;
+
+# ── n8n — Workflow Automation ─────────────────────────────────────────────────
+server {
+    listen      80;
+    server_name n8n.localhost;
+    location / { proxy_pass http://host.docker.internal:${N8N_PORT}; }
+}
+
+# ── Outline — Knowledge Base ──────────────────────────────────────────────────
+server {
+    listen      80;
+    server_name outline.localhost;
+    location / { proxy_pass http://host.docker.internal:${OUTLINE_PORT}; }
+}
+
+# ── Plane — Project Management ────────────────────────────────────────────────
+server {
+    listen      80;
+    server_name plane.localhost;
+    location / { proxy_pass http://host.docker.internal:${PLANE_PORT}; }
+}
+
+# ── trigger.dev — Background Jobs ────────────────────────────────────────────
+server {
+    listen      80;
+    server_name trigger.localhost;
+    location / { proxy_pass http://host.docker.internal:${TRIGGERDEV_PORT}; }
+}
+
+# ── FreeScout — Help Desk ─────────────────────────────────────────────────────
+server {
+    listen      80;
+    server_name freescout.localhost;
+    location / { proxy_pass http://host.docker.internal:${FREESCOUT_PORT}; }
+}
+
+# ── Invoice Ninja — Accounting ────────────────────────────────────────────────
+server {
+    listen      80;
+    server_name invoiceninja.localhost;
+    location / { proxy_pass http://host.docker.internal:${INVOICENINJA_PORT}; }
+}
+
+# ── InvenTree — Inventory Management ─────────────────────────────────────────
+server {
+    listen      80;
+    server_name inventree.localhost;
+    location / { proxy_pass http://host.docker.internal:${INVENTREE_PORT}; }
+}
+
+# ── Ollama — LLM Inference API ────────────────────────────────────────────────
+server {
+    listen      80;
+    server_name ollama.localhost;
+    location / { proxy_pass http://host.docker.internal:${OLLAMA_PORT}; }
+}
+
+# ── ComfyUI — Image Generation ───────────────────────────────────────────────
+server {
+    listen      80;
+    server_name comfyui.localhost;
+    location / { proxy_pass http://host.docker.internal:${COMFYUI_PORT}; }
+}
+
+# ── WireGuard (wg-easy) — VPN Management ─────────────────────────────────────
+server {
+    listen      80;
+    server_name wg.localhost;
+    location / { proxy_pass http://host.docker.internal:${WG_PORT}; }
+}

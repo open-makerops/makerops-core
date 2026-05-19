@@ -99,8 +99,9 @@ services:
     restart: unless-stopped
     environment:
       INVENTREE_SERVER_ADDR: http://inventree-server:8000
+      INVENTREE_CANONICAL_HOST: "${INVENTREE_CANONICAL_HOST:-inventree.localhost}"
     ports:
-      - "${INVENTREE_WEB_PORT:-8096}:80"
+      - "${INVENTREE_WEB_PORT:-8096}:8096"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ${INVENTREE_APP_DATA_PATH:-./data/inventree}:/var/www:ro
