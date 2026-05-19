@@ -59,12 +59,12 @@ done
 echo "  Garage is healthy."
 
 # ── Single-node cluster initialization ────────────────────────────────────────
-SENTINEL="./data/.initialized"
+SENTINEL="./.initialized"
 if [[ ! -f "$SENTINEL" ]]; then
     echo "Initializing single-node cluster..."
 
     # Get the full node ID (hex string)
-    NODE_ID=$(docker exec garage /garage node id 2>/dev/null | awk '{print $1}')
+    NODE_ID=$(docker exec garage /garage node id 2>/dev/null | awk '{print $1}' | cut -d@ -f1)
     if [[ -z "$NODE_ID" ]]; then
         echo "ERROR: Could not retrieve node ID from Garage."
         exit 1
@@ -95,7 +95,6 @@ if [[ ! -f "$SENTINEL" ]]; then
     sed -i "s|^GARAGE_SECRET_ACCESS_KEY=.*|GARAGE_SECRET_ACCESS_KEY=${KEY_SECRET}|" .env
 
     # Write sentinel so we skip this block on subsequent starts
-    mkdir -p ./data
     touch "$SENTINEL"
 
     echo "  Default S3 key created and written to .env."

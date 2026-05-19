@@ -1,3 +1,4 @@
 .env
 garage.toml
 data/
+.initialized
