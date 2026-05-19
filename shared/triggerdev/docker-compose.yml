@@ -1,96 +1,229 @@
-x-webapp-env: &webapp-env
-  LOGIN_ORIGIN: ${TRIGGER_PROTOCOL:-http}://${TRIGGER_DOMAIN:-localhost:3040}
-  APP_ORIGIN: ${TRIGGER_PROTOCOL:-http}://${TRIGGER_DOMAIN:-localhost:3040}
-  DEV_OTEL_EXPORTER_OTLP_ENDPOINT: ${TRIGGER_PROTOCOL:-http}://${TRIGGER_DOMAIN:-localhost:3040}/otel
-  ELECTRIC_ORIGIN: http://electric:3000
+x-logging: &logging
+  driver: local
+  options:
+    max-size: "20m"
+    max-file: "5"
+    compress: "true"
 
-x-worker-env: &worker-env
-  PLATFORM_HOST: webapp
-  PLATFORM_WS_PORT: 3030
-  SECURE_CONNECTION: "false"
-  OTEL_EXPORTER_OTLP_ENDPOINT: ${TRIGGER_PROTOCOL:-http}://${TRIGGER_DOMAIN:-localhost:3040}/otel
+volumes:
+  shared:
 
 networks:
-  trigger_net:
+  webapp:
+  supervisor:
+  docker-proxy:
 
 services:
+  # One-shot init: sets ownership on the shared volume before webapp starts.
+  # Uses UID 1000 (the standard node user in Node.js Docker images).
+  shared-init:
+    container_name: trigger_shared_init
+    image: busybox
+    command: sh -c "chown -R 1000:1000 /home/node/shared"
+    user: root
+    volumes:
+      - shared:/home/node/shared
+    networks:
+      - webapp
+
   webapp:
     container_name: trigger_webapp
-    image: ghcr.io/triggerdotdev/trigger.dev:${TRIGGER_IMAGE_TAG:-v3}
+    image: ghcr.io/triggerdotdev/trigger.dev:${TRIGGER_IMAGE_TAG:-v4.4.6}
     restart: unless-stopped
+    logging: *logging
+    ports:
+      - "${LISTEN_PORT:-3040}:3000"
+    depends_on:
+      shared-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    networks:
+      - webapp
+      - supervisor
+    volumes:
+      - shared:/home/node/shared
+    healthcheck:
+      test: ["CMD", "node", "-e", "http.get('http://localhost:3000/healthcheck', res => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     env_file: .env
     environment:
-      <<: *webapp-env
-    ports:
-      - "${LISTEN_PORT:-3040}:3030"
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - trigger_net
+      ELECTRIC_ORIGIN: http://electric:3000
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_TLS_DISABLED: "true"
+      DEPLOY_REGISTRY_HOST: ${DOCKER_REGISTRY_URL:-localhost:5000}
+      DEPLOY_REGISTRY_NAMESPACE: ${DOCKER_REGISTRY_NAMESPACE:-trigger}
+      DEV_OTEL_EXPORTER_OTLP_ENDPOINT: ${APP_ORIGIN}/otel
+      TRIGGER_BOOTSTRAP_ENABLED: "1"
+      TRIGGER_BOOTSTRAP_WORKER_GROUP_NAME: bootstrap
+      TRIGGER_BOOTSTRAP_WORKER_TOKEN_PATH: /home/node/shared/worker_token
+      INTERNAL_OTEL_TRACE_LOGGING_ENABLED: "0"
+      NODE_ENV: production
 
   postgres:
     container_name: trigger_db
     image: postgres:${POSTGRES_IMAGE_TAG:-16}
     restart: unless-stopped
+    logging: *logging
     volumes:
       - ${TRIGGERDEV_DB_DATA_PATH:-./data/postgres}:/var/lib/postgresql/data/
     env_file: .env
     networks:
-      - trigger_net
+      - webapp
     command:
       - -c
       - wal_level=logical
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   redis:
     container_name: trigger_redis
     image: redis:${REDIS_IMAGE_TAG:-7}
     restart: unless-stopped
+    logging: *logging
     volumes:
       - ${TRIGGERDEV_REDIS_DATA_PATH:-./data/redis}:/data
     networks:
-      - trigger_net
+      - webapp
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   electric:
     container_name: trigger_electric
-    image: electricsql/electric:${ELECTRIC_IMAGE_TAG:-latest}
+    image: electricsql/electric:${ELECTRIC_IMAGE_TAG:-1.2.4}
     restart: unless-stopped
+    logging: *logging
     environment:
       DATABASE_URL: ${DATABASE_URL}?sslmode=disable
       ELECTRIC_INSECURE: "true"
+      ELECTRIC_USAGE_REPORTING: "false"
     networks:
-      - trigger_net
-    depends_on:
-      - postgres
-
-  docker-provider:
-    container_name: trigger_provider
-    image: ghcr.io/triggerdotdev/provider/docker:${TRIGGER_IMAGE_TAG:-v3}
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    user: root
-    networks:
-      - trigger_net
-    depends_on:
       - webapp
-    env_file: .env
-    environment:
-      <<: *worker-env
-      PLATFORM_SECRET: ${PROVIDER_SECRET}
-
-  coordinator:
-    container_name: trigger_coordinator
-    image: ghcr.io/triggerdotdev/coordinator:${TRIGGER_IMAGE_TAG:-v3}
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    user: root
-    networks:
-      - trigger_net
     depends_on:
-      - webapp
-    env_file: .env
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  clickhouse:
+    container_name: trigger_clickhouse
+    image: clickhouse/clickhouse-server:${CLICKHOUSE_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    logging: *logging
+    volumes:
+      - ${TRIGGERDEV_CLICKHOUSE_DATA_PATH:-./data/clickhouse}:/var/lib/clickhouse
     environment:
-      <<: *worker-env
-      PLATFORM_SECRET: ${COORDINATOR_SECRET}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    networks:
+      - webapp
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  registry:
+    container_name: trigger_registry
+    image: registry:${REGISTRY_IMAGE_TAG:-2}
+    restart: unless-stopped
+    logging: *logging
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./registry/auth.htpasswd:/auth/htpasswd:ro
+      - ${TRIGGERDEV_REGISTRY_DATA_PATH:-./data/registry}:/var/lib/registry
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+    networks:
+      - webapp
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:5000/ 2>&1 | grep -q '' || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  docker-proxy:
+    container_name: trigger_docker_proxy
+    image: tecnativa/docker-socket-proxy:${DOCKER_PROXY_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    logging: *logging
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker-proxy
+    environment:
+      LOG_LEVEL: info
+      POST: "1"
+      CONTAINERS: "1"
+      IMAGES: "1"
+      INFO: "1"
+      NETWORKS: "1"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 2375 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  supervisor:
+    container_name: trigger_supervisor
+    image: ghcr.io/triggerdotdev/supervisor:${TRIGGER_IMAGE_TAG:-v4.4.6}
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      docker-proxy:
+        condition: service_healthy
+      webapp:
+        condition: service_healthy
+    networks:
+      - supervisor
+      - docker-proxy
+    volumes:
+      - shared:/home/node/shared
+    environment:
+      TRIGGER_WORKER_TOKEN: file:///home/node/shared/worker_token
+      MANAGED_WORKER_SECRET: ${MANAGED_WORKER_SECRET}
+      TRIGGER_API_URL: http://webapp:3000
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://webapp:3000/otel
+      TRIGGER_WORKLOAD_API_DOMAIN: supervisor
+      TRIGGER_WORKLOAD_API_PORT_EXTERNAL: "8020"
+      DEBUG: "1"
+      ENFORCE_MACHINE_PRESETS: "1"
+      TRIGGER_DEQUEUE_INTERVAL_MS: "1000"
+      DOCKER_HOST: tcp://docker-proxy:2375
+      DOCKER_RUNNER_NETWORKS: webapp,supervisor
+      DOCKER_REGISTRY_URL: ${DOCKER_REGISTRY_URL:-localhost:5000}
+      DOCKER_REGISTRY_USERNAME: ${DOCKER_REGISTRY_USERNAME}
+      DOCKER_REGISTRY_PASSWORD: ${DOCKER_REGISTRY_PASSWORD}
+      DOCKER_AUTOREMOVE_EXITED_CONTAINERS: "0"
+    healthcheck:
+      test: ["CMD", "node", "-e", "http.get('http://localhost:8020/health', res => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s

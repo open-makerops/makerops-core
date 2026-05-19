@@ -30,6 +30,13 @@ echo "════════════════════════�
 echo "  trigger.dev — teardown"
 echo "══════════════════════════════════════════"
 echo ""
+# ── Enumerate data directories ────────────────────────────────────────────────
+DB_DATA_PATH=$(grep "^TRIGGERDEV_DB_DATA_PATH=" .env 2>/dev/null | cut -d= -f2- || echo "./data/postgres")
+REDIS_DATA_PATH=$(grep "^TRIGGERDEV_REDIS_DATA_PATH=" .env 2>/dev/null | cut -d= -f2- || echo "./data/redis")
+CH_DATA_PATH=$(grep "^TRIGGERDEV_CLICKHOUSE_DATA_PATH=" .env 2>/dev/null | cut -d= -f2- || echo "./data/clickhouse")
+REG_DATA_PATH=$(grep "^TRIGGERDEV_REGISTRY_DATA_PATH=" .env 2>/dev/null | cut -d= -f2- || echo "./data/registry")
+DATA_DIRS="${DB_DATA_PATH:-./data/postgres} ${REDIS_DATA_PATH:-./data/redis} ${CH_DATA_PATH:-./data/clickhouse} ${REG_DATA_PATH:-./data/registry}"
+
 echo "The following Docker resources will be permanently removed:"
 echo ""
 echo "Containers:"
@@ -37,6 +44,11 @@ echo "Containers:"
 echo ""
 echo "Volumes  (ALL DATA WILL BE LOST):"
 [[ -n "$VOLUMES" ]] && echo "$VOLUMES" || echo "  (none)"
+echo ""
+echo "Host data directories  (ALL DATA WILL BE LOST):"
+for d in $DATA_DIRS; do
+    [[ -d "$d" ]] && echo "  $d" || true
+done
 echo ""
 echo "Images:"
 [[ -n "$IMAGES" ]] && echo "$IMAGES" || echo "  (none)"
@@ -58,5 +70,15 @@ fi
 echo "Removing containers, volumes, images, and networks..."
 docker compose -p "$PROJECT" down --volumes --rmi all --remove-orphans
 
+echo "Removing host data directories..."
+for d in $DATA_DIRS; do
+    [[ -d "$d" ]] && rm -rf "$d" && echo "  Removed $d" || true
+done
+rm -f registry/auth.htpasswd
+
 echo ""
-echo "Done. Re-run start.sh to create a fresh installation."
+echo "Done."
+echo ""
+echo "To create a fresh installation:"
+echo "  cp .env.example .env"
+echo "  ./start.sh"

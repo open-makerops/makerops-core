@@ -3,6 +3,7 @@
 **/db_data/
 **/config/
 **/data/
+**/registry/
 
 # ── Environment files (belt-and-suspenders; each service dir has its own) ────
 **/.env
