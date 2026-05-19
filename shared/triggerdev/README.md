@@ -38,9 +38,18 @@ trigger.dev uses passwordless magic link authentication by default. On first vis
 1. Run `./start.sh` and wait ~30 seconds for the webapp to become ready
 2. Open http://localhost:3040 and enter your email address, then click **Send magic link**
 3. Retrieve the magic link from the webapp logs:
+   Use the provided `magic-link-helper.sh` script:
+
+   ```bash
+   ./magic-link-helper.sh
+   ```
+
+   OR retrieve the value manually
+
    ```bash
    docker compose -p triggerdev logs webapp 2>&1 | grep 'http://' | tail -5
    ```
+
    Look for a line containing the full login URL:
 
    ```text
@@ -55,6 +64,8 @@ trigger.dev uses passwordless magic link authentication by default. On first vis
 
    > **No output?** The link is emitted at the moment you submit your email, not at startup. If nothing
    > appears, re-submit the form and run the command again immediately after.
+   >
+   > **Shortcut:** `./magic-link-helper.sh` fetches and prints the magic link URL for you.
 
 4. Open the full URL in your browser to complete sign-in and create your account
 5. Create an organisation and project from the dashboard
@@ -66,6 +77,7 @@ To restrict who can sign up, set `WHITELISTED_EMAILS` in `.env` before first sta
 ## Scripts
 
 ### `./start.sh`
+
 On **first run** generates all secrets (`POSTGRES_PASSWORD`, `MAGIC_LINK_SECRET`, `SESSION_SECRET`, `ENCRYPTION_KEY`, `PROVIDER_SECRET`, `COORDINATOR_SECRET`) and derives `DATABASE_URL` and `DIRECT_URL` from component values, writes everything into `.env`, then pulls images and starts the stack.
 
 ```bash
@@ -73,6 +85,7 @@ On **first run** generates all secrets (`POSTGRES_PASSWORD`, `MAGIC_LINK_SECRET`
 ```
 
 ### `./stop.sh`
+
 Stops all containers. Volumes (database, Redis) are preserved.
 
 ```bash
@@ -80,6 +93,7 @@ Stops all containers. Volumes (database, Redis) are preserved.
 ```
 
 ### `./teardown.sh`
+
 Interactive full teardown — lists everything that will be removed, prompts for confirmation, then deletes all containers, volumes, images, and networks.
 
 ```bash
@@ -87,6 +101,7 @@ Interactive full teardown — lists everything that will be removed, prompts for
 ```
 
 To re-install completely fresh (new secrets):
+
 ```bash
 sed -i 's/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=GENERATE_ME/' .env
 sed -i 's/^DATABASE_URL=.*/DATABASE_URL=GENERATE_ME/' .env
@@ -100,6 +115,15 @@ sed -i 's/^COORDINATOR_SECRET=.*/COORDINATOR_SECRET=GENERATE_ME/' .env
 ./start.sh
 ```
 
+### `./magic-link-helper.sh`
+
+Prints the most recent magic link login URL from the webapp logs.
+Run after submitting your email on the login page.
+
+```bash
+./magic-link-helper.sh
+```
+
 ---
 
 ## Files
@@ -111,6 +135,7 @@ sed -i 's/^COORDINATOR_SECRET=.*/COORDINATOR_SECRET=GENERATE_ME/' .env
 | `start.sh` | Start / first-run setup (secret generation + URL derivation) |
 | `stop.sh` | Stop (volumes preserved) |
 | `teardown.sh` | Full wipe with confirmation |
+| `magic-link-helper.sh` | Print the most recent magic link login URL from the webapp logs |
 
 ### `.env` — values of interest
 
@@ -176,6 +201,7 @@ trigger_coordinator — Coordinator (manages checkpointing and worker lifecycle)
 ## Cheat Sheet
 
 ### Logs
+
 ```bash
 # All services
 docker compose -p triggerdev logs -f
@@ -194,6 +220,7 @@ docker logs trigger_db -f
 ```
 
 ### Shell access
+
 ```bash
 # Webapp shell
 docker exec -it trigger_webapp sh
@@ -203,11 +230,13 @@ docker exec -it trigger_db psql -U postgres -d trigger
 ```
 
 ### Get the magic link (first-run / locked out)
+
 ```bash
 docker logs trigger_webapp 2>&1 | grep -i 'magic\|login' | tail -5
 ```
 
 ### SDK setup (connecting your app to this instance)
+
 ```bash
 # Install the SDK in your project
 npm install @trigger.dev/sdk
@@ -220,11 +249,13 @@ npx trigger.dev init
 ```
 
 ### Run a task manually (CLI)
+
 ```bash
 npx trigger.dev run <task-id>
 ```
 
 ### Upgrade trigger.dev
+
 1. Update `TRIGGER_IMAGE_TAG` in `.env` to the new version (e.g. `v3.x.y`)
 2. `./stop.sh && ./start.sh`
 3. Database migrations run automatically on webapp startup
@@ -232,23 +263,30 @@ npx trigger.dev run <task-id>
 > Check the [release notes](https://github.com/triggerdotdev/trigger.dev/releases) for breaking changes before upgrading.
 
 ### Adjust concurrency limits
+
 Edit `.env`:
+
 ```
 DEFAULT_ENV_EXECUTION_CONCURRENCY_LIMIT=200   # per environment
 DEFAULT_ORG_EXECUTION_CONCURRENCY_LIMIT=600   # per organisation
 ```
+
 Then restart: `./stop.sh && ./start.sh`
 
 ### Enable email delivery (magic links via email)
+
 Set in `.env`:
+
 ```
 FROM_EMAIL=noreply@yourdomain.com
 REPLY_TO_EMAIL=support@yourdomain.com
 RESEND_API_KEY=re_xxxxxxxxxxxx
 ```
+
 Then restart: `./stop.sh && ./start.sh`
 
 ### Back up data
+
 ```bash
 # Database dump
 docker exec trigger_db pg_dump -U postgres trigger | gzip > triggerdev_backup.sql.gz
@@ -259,54 +297,72 @@ docker exec trigger_db pg_dump -U postgres trigger | gzip > triggerdev_backup.sq
 ## Debugging
 
 ### Webapp not responding
+
 ```bash
 docker logs trigger_webapp --tail 50
 ```
+
 Check that PostgreSQL and Redis are healthy before the webapp starts.
 
 ### Magic link not appearing in logs
+
 ```bash
 docker logs trigger_webapp 2>&1 | grep -i 'magic\|link\|login' | tail -10
 ```
+
 If nothing appears, confirm the webapp started successfully first (`docker logs trigger_webapp | tail -20`). The link is emitted at the moment of the login request, not at startup.
 
 ### Tasks not executing (stuck in "Queued")
+
 ```bash
 docker logs trigger_provider --tail 30
 docker logs trigger_coordinator --tail 30
 ```
+
 Common causes:
+
 - `docker-provider` cannot connect to the Docker daemon — verify `/var/run/docker.sock` is accessible
 - Worker image failed to pull — check provider logs for image pull errors
 - `PLATFORM_SECRET` mismatch between webapp and provider/coordinator
 
 ### Provider / coordinator cannot connect to webapp
+
 Both connect to `webapp:3030` on the internal Docker network. Verify the webapp container is healthy:
+
 ```bash
 docker inspect trigger_webapp --format '{{.State.Health.Status}}'
 ```
+
 If unhealthy, check webapp logs for startup errors (database connection, migration failures).
 
 ### ElectricSQL sync errors
+
 ```bash
 docker logs trigger_electric --tail 20
 ```
+
 Electric connects to PostgreSQL with `wal_level=logical` (set in the compose command). If it fails, verify PostgreSQL started with that WAL level:
+
 ```bash
 docker exec trigger_db psql -U postgres -c "SHOW wal_level;"
 ```
 
 ### Database connection errors
+
 ```bash
 docker exec trigger_db pg_isready -U postgres
 ```
+
 If not ready, check:
+
 ```bash
 docker logs trigger_db --tail 20
 ```
 
 ### Reset (locked out / corrupt state)
+
 Export any task definitions from source control (they live in your application code, not in the database). Then teardown and reinstall:
+
 ```bash
 ./teardown.sh
 ./start.sh
