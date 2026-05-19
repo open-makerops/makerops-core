@@ -9,7 +9,7 @@
 # S3 storage:  infrastructure/garage (port 3900) — start Garage first
 # Auth:        infrastructure/keycloak (port 8080, coming soon) — configure OIDC_* in .env
 #
-# UI: http://localhost:3000
+# UI: http://localhost:3001  (3000 is reserved for triggerdotdev_sandbox)
 
 services:
 

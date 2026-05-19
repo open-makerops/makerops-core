@@ -21,11 +21,9 @@ Outline is a fast, open-source wiki and knowledge base for teams. It features re
 
 | | |
 |---|---|
-| **URL** | http://localhost:3000 |
-| **Auth** | OIDC via Keycloak (configure `OIDC_*` in `.env` once Keycloak is running) |
+| **URL** | http://localhost:3001 |
+| **Auth** | None required for local access (OIDC optional — see Auth Setup) |
 | **S3 storage** | Garage at http://localhost:3900, bucket `outline` |
-
-> Outline has no built-in admin credentials. Access is granted through the configured auth provider. The first user to sign in becomes the workspace owner.
 
 ---
 
@@ -36,8 +34,6 @@ Outline is a fast, open-source wiki and knowledge base for teams. It features re
 ```bash
 cd ../../infrastructure/garage && ./start.sh
 ```
-
-**Keycloak** (coming soon under `infrastructure/keycloak`) will provide OIDC authentication. Until it is running, no one can sign in. Configure `OIDC_*` in `.env` and restart once Keycloak is available.
 
 ---
 
@@ -83,9 +79,9 @@ sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=OVERWRITE_ME/' .env
 
 ## Auth Setup
 
-Outline requires at least one auth provider before any user can sign in.
+Auth is optional for local single-user access. Configure it when you need multi-user sign-in or want to restrict access.
 
-### OIDC (Keycloak) — recommended
+### OIDC (Keycloak) — optional
 
 Once Keycloak is running, create an `outline` client in your realm and fill in `.env`:
 
@@ -105,7 +101,7 @@ OIDC_USERNAME_CLAIM=preferred_username
 
 Then restart: `./stop.sh && ./start.sh`
 
-### SMTP magic-link — standalone fallback
+### SMTP magic-link — optional
 
 Uncomment and fill in the `SMTP_*` section of `.env`. Outline will send magic-link emails for sign-in. Restart after changes.
 
@@ -127,7 +123,7 @@ Uncomment and fill in the `SMTP_*` section of `.env`. Outline will send magic-li
 
 | Variable | Value | Notes |
 |---|---|---|
-| `URL` | `http://localhost:3000` | Must match the browser URL |
+| `URL` | `http://localhost:3001` | Must match the browser URL |
 | `SECRET_KEY` | *(generated)* | Encrypts cookies/sessions; **never change** after first start |
 | `UTILS_SECRET` | *(generated)* | Used for utility functions; **never change** after first start |
 | `DB_PASSWORD` | *(generated)* | PostgreSQL password |
@@ -140,17 +136,12 @@ Uncomment and fill in the `SMTP_*` section of `.env`. Outline will send magic-li
 
 ```
 Browser
-  └─► localhost:3000
+  └─► localhost:3001
         └─► outline  (Outline app — Node.js)
               ├─► outline_db:5432   (PostgreSQL 17 — documents, users)
               ├─► outline_redis:6379 (Redis 7 — cache, collab sessions)
               └─► host.docker.internal:3900  (Garage S3 — file uploads)
                     └─► infrastructure/garage  (separate compose project)
-
-OIDC sign-in flow:
-  Browser ──► localhost:8080  (Keycloak — separate compose project, coming soon)
-            ◄── redirect back to localhost:3000 with auth code
-  outline ──► host.docker.internal:8080  (token + userinfo exchange)
 ```
 
 **Containers:**
@@ -239,10 +230,6 @@ If the bucket is missing, re-run the allow command:
 docker exec garage /garage bucket create outline 2>/dev/null || true
 docker exec garage /garage bucket allow --read --write --owner outline --key default
 ```
-
-### OIDC sign-in loop / token errors
-
-Check that `OIDC_TOKEN_URI` and `OIDC_USERINFO_URI` use `host.docker.internal` (not `localhost`) so the Outline container can reach Keycloak. `OIDC_AUTH_URI` should use `localhost` (browser-facing).
 
 ### SECRET_KEY mismatch (sessions broken after re-install)
 
