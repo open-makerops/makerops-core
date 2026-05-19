@@ -1,44 +1,48 @@
 :80 {
-    log {
-        output stdout
-        level INFO
-    }
+	log {
+		output stdout
+		level INFO
+	}
 
-    # Static assets — served directly from the shared data volume
-    handle /static/* {
-        root * /var/www
-        file_server {
-            precompressed br gzip
-        }
-        encode zstd gzip
-        header Cache-Control "max-age=86400"
-        @preflight method OPTIONS
-        respond @preflight 204
-        header Access-Control-Allow-Origin *
-        header Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
-    }
+	# Static assets — served directly from the shared data volume
+	handle /static/* {
+		root * /var/www
+		file_server {
+			precompressed br gzip
+		}
+		encode zstd gzip
+		# Only cache responses for files that actually exist on disk.
+		# Without this guard, Caddy caches 404s with max-age=86400 and browsers
+		# will serve those stale 404s for 24 hours even after files are populated.
+		@exists file
+		header @exists Cache-Control "max-age=86400"
+		@preflight method OPTIONS
+		respond @preflight 204
+		header Access-Control-Allow-Origin *
+		header Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+	}
 
-    # Media files — served directly; forward-auth enforced by the app server
-    handle /media/* {
-        root * /var/www
-        file_server
-        encode zstd gzip
-        header Access-Control-Allow-Origin *
-        header Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
-        header Content-Disposition "attachment"
-        forward_auth {$INVENTREE_SERVER_ADDR} {
-            uri /auth/
-            copy_headers Remote-User Remote-Email Remote-Groups Remote-Name
-        }
-    }
+	# Media files — served directly; forward-auth enforced by the app server
+	handle /media/* {
+		root * /var/www
+		file_server
+		encode zstd gzip
+		header Access-Control-Allow-Origin *
+		header Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+		header Content-Disposition "attachment"
+		forward_auth {$INVENTREE_SERVER_ADDR} {
+			uri /auth/
+			copy_headers Remote-User Remote-Email Remote-Groups Remote-Name
+		}
+	}
 
-    # Everything else — proxy to the application server
-    handle {
-        request_body {
-            max_size 100MB
-        }
-        reverse_proxy {$INVENTREE_SERVER_ADDR} {
-            header_up X-Forwarded-Host {host}
-        }
-    }
+	# Everything else — proxy to the application server
+	handle {
+		request_body {
+			max_size 100MB
+		}
+		reverse_proxy {$INVENTREE_SERVER_ADDR} {
+			header_up X-Forwarded-Host {host}
+		}
+	}
 }

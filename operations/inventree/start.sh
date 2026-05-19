@@ -9,6 +9,10 @@
 #   1. Generates secret_key.txt in the data volume
 #   2. Runs database migrations (INVENTREE_AUTO_UPDATE=True)
 #   3. Creates the admin account from INVENTREE_ADMIN_USER/EMAIL/PASSWORD
+#
+# NOTE: The InvenTree Docker image (1.3.2+) runs gunicorn directly and does NOT
+# call collectstatic on startup. INVENTREE_AUTO_UPDATE only handles migrations.
+# collectstatic must be run explicitly after the server is up — handled below.
 set -e
 
 PROJECT=inventree
@@ -45,6 +49,19 @@ docker compose -p "$PROJECT" pull --quiet
 
 echo "Starting services..."
 docker compose -p "$PROJECT" up -d
+
+# ── collectstatic ─────────────────────────────────────────────────────────────
+# The image runs gunicorn directly and never calls collectstatic automatically.
+# Collect static files so the React frontend assets are present in the shared
+# data volume for Caddy to serve. Retry until the container process is ready.
+echo "Collecting static files..."
+for i in $(seq 1 15); do
+    if docker compose -p "$PROJECT" exec -T inventree-server \
+        python /home/inventree/src/backend/InvenTree/manage.py collectstatic --no-input --verbosity 0 --clear 2>/dev/null; then
+        break
+    fi
+    sleep 2
+done
 
 # ── Summary ───────────────────────────────────────────────────────────────────
 SITE_URL=$(grep "^INVENTREE_SITE_URL=" .env | cut -d= -f2-)
