@@ -1,5 +1,7 @@
 # Outline — Collaborative Knowledge Base
 
+![Outline](assets/images/outline-mock.png)
+
 Outline is a fast, open-source wiki and knowledge base for teams. It features real-time collaborative editing, a clean Markdown interface, nested documents, full-text search, and role-based permissions.
 
 - **Home page:** https://www.getoutline.com

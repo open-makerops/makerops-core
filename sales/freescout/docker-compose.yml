@@ -50,6 +50,7 @@ services:
       DB_USER: freescout
       DB_PASS: "${DB_PASSWORD}"
       SITE_URL: "${SITE_URL:-http://localhost:8095}"
+      APP_TRUSTED_HOSTS: "${APP_TRUSTED_HOSTS:-}"
       ADMIN_EMAIL: "${ADMIN_EMAIL}"
       ADMIN_PASS: "${ADMIN_PASS}"
       DISPLAY_ERRORS: "FALSE"

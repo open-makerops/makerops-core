@@ -1,5 +1,7 @@
 # trigger.dev — self-hosted background jobs
 
+![trigger.dev](assets/images/trigger-login.png)
+
 A self-hosted [Trigger.dev v4](https://trigger.dev) stack for running background tasks and workflows. Trigger.dev executes long-running, event-driven, and scheduled tasks in isolated worker containers, keeping them out of your web server.
 
 ---

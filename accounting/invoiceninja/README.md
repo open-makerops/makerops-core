@@ -1,5 +1,7 @@
 # Invoice Ninja — Invoicing & Accounting
 
+![Invoice Ninja](assets/images/invoiceninja-login.png)
+
 Invoice Ninja is an open-source invoicing, billing, and accounting platform. It supports clients, products, invoices, quotes, recurring invoices, expenses, time tracking, payment gateways, bank feeds, and multi-company setups.
 
 - **Home page:** https://invoiceninja.com

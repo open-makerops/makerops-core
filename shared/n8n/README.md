@@ -1,5 +1,7 @@
 # n8n — Workflow Automation
 
+![n8n](assets/images/n8n-login.png)
+
 n8n is an open-source workflow automation platform with a visual node-based editor. It connects APIs, databases, files, and services without writing code, and supports complex branching logic, error handling, sub-workflows, and hundreds of built-in integrations.
 
 - **Home page:** https://n8n.io

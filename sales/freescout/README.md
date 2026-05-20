@@ -1,5 +1,7 @@
 # FreeScout — Help Desk & Shared Inbox
 
+![FreeScout](assets/images/freescout-login.png)
+
 FreeScout is an open-source help desk and shared mailbox application — a self-hosted alternative to HelpScout or Zendesk. It supports shared email inboxes, customer conversation threads, canned replies, modules/plugins, and multi-user teams.
 
 - **Home page:** https://freescout.net

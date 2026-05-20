@@ -1,5 +1,7 @@
 # InvenTree — Inventory & Parts Management
 
+![Inventree](assets/images/inventree-login.png)
+
 InvenTree is an open-source inventory management system designed for tracking parts, stock, assemblies, BOMs, purchase orders, and sales orders. It is well-suited for electronics labs, maker spaces, and small manufacturing operations.
 
 - **Home page:** https://inventree.org

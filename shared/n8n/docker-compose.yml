@@ -54,6 +54,7 @@ x-shared: &shared
     GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-America/Chicago}
     TZ: ${TZ:-America/Chicago}
     N8N_LOG_LEVEL: ${N8N_LOG_LEVEL:-info}
+    N8N_SECURE_COOKIE: "${N8N_SECURE_COOKIE:-true}"
     N8N_DIAGNOSTICS_ENABLED: "false"
     # ── Execution data pruning ────────────────────────────────────────────────
     EXECUTIONS_DATA_PRUNE: "true"

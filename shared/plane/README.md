@@ -1,5 +1,7 @@
 # Plane — Project Management
 
+![Plane](assets/images/plane-login.png)
+
 Plane is an open-source project management platform — a self-hosted alternative to Linear, Jira, and Asana. It supports issues, cycles (sprints), modules (epics), views, pages (wiki), and real-time collaboration.
 
 - **Home page:** https://plane.so
