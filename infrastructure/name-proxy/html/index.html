@@ -38,7 +38,7 @@
     header {
       background-image: url("/assets/images/makerops-core-hero.png");
       background-size: cover;
-      background-position: center top;
+      background-position: center center;
       padding: 3rem 2rem;
       display: flex;
       align-items: center;
@@ -126,7 +126,16 @@
       border-radius: var(--radius);
     }
 
-    /* Letter badge */
+    /* Service icon image */
+    .service-icon {
+      width: 2.1rem;
+      height: 2.1rem;
+      border-radius: 6px;
+      flex-shrink: 0;
+      object-fit: contain;
+    }
+
+    /* Letter badge fallback (services without an icon file) */
     .badge {
       width: 2.1rem;
       height: 2.1rem;
@@ -143,7 +152,7 @@
       user-select: none;
     }
 
-    /* Muted badge for no-UI services */
+    /* Muted badge for no-UI services without an icon */
     .no-ui .badge {
       background: var(--color-surface);
       color: var(--color-text-muted);
@@ -269,20 +278,20 @@
   const CAT_ORDER = ["Shared", "Accounting", "Sales", "Operations", "AI", "Remote Access", "Infrastructure"];
 
   const SERVICES = [
-    { cat: "Shared",         name: "n8n",            desc: "Workflow Automation",         sub: "n8n",          readme: "shared/n8n/README.md" },
-    { cat: "Shared",         name: "Outline",         desc: "Knowledge Base",              sub: "outline",      readme: "shared/outline/README.md" },
-    { cat: "Shared",         name: "Plane",           desc: "Project Management",          sub: "plane",        readme: "shared/plane/README.md" },
-    { cat: "Shared",         name: "trigger.dev",     desc: "Background Jobs",             sub: "trigger",      readme: "shared/triggerdev/README.md" },
-    { cat: "Accounting",     name: "Invoice Ninja",   desc: "Accounting & Invoicing",      sub: "invoiceninja", readme: "accounting/invoiceninja/README.md" },
-    { cat: "Sales",          name: "FreeScout",       desc: "Help Desk",                   sub: "freescout",    readme: "sales/freescout/README.md" },
-    { cat: "Operations",     name: "InvenTree",       desc: "Inventory Management",        sub: "inventree",    readme: "operations/inventree/README.md" },
-    { cat: "AI",             name: "Ollama",          desc: "LLM Inference API",           sub: "ollama",       readme: "ai/ollama/README.md" },
-    { cat: "AI",             name: "ComfyUI",         desc: "Image Generation",            sub: "comfyui",      readme: "ai/comfyui/README.md" },
-    { cat: "Remote Access",  name: "WireGuard",       desc: "VPN Management",              sub: "wg",           readme: "remote_access/wg-easy/README.md" },
-    { cat: "Remote Access",  name: "Cloudflare DDNS", desc: "Dynamic DNS",                 sub: "",             readme: "remote_access/cloudflare-ddns/README.md" },
-    { cat: "Infrastructure", name: "Garage",          desc: "S3-Compatible Object Store",  sub: "",             readme: "infrastructure/garage/README.md" },
-    { cat: "Infrastructure", name: "LAN DNS",         desc: "Local Domain Name Server",    sub: "",             readme: "infrastructure/lan-dns/README.md" },
-    { cat: "Infrastructure", name: "name-proxy",      desc: "Subdomain Reverse Proxy",     sub: "",             readme: "infrastructure/name-proxy/README.md" },
+    { cat: "Shared",         name: "n8n",            desc: "Workflow Automation",         sub: "n8n",          readme: "shared/n8n/README.md",                        icon: "/assets/images/n8n-icon.png" },
+    { cat: "Shared",         name: "Outline",         desc: "Knowledge Base",              sub: "outline",      readme: "shared/outline/README.md",                    icon: "/assets/images/outline-icon.jpg" },
+    { cat: "Shared",         name: "Plane",           desc: "Project Management",          sub: "plane",        readme: "shared/plane/README.md",                      icon: "/assets/images/plane-icon.png" },
+    { cat: "Shared",         name: "trigger.dev",     desc: "Background Jobs",             sub: "trigger",      readme: "shared/triggerdev/README.md",                 icon: "/assets/images/trigger-dev-icon.png" },
+    { cat: "Accounting",     name: "Invoice Ninja",   desc: "Accounting & Invoicing",      sub: "invoiceninja", readme: "accounting/invoiceninja/README.md",            icon: "/assets/images/invoiceninja-icon.png" },
+    { cat: "Sales",          name: "FreeScout",       desc: "Help Desk",                   sub: "freescout",    readme: "sales/freescout/README.md",                   icon: "/assets/images/freescount-icon.webp" },
+    { cat: "Operations",     name: "InvenTree",       desc: "Inventory Management",        sub: "inventree",    readme: "operations/inventree/README.md",               icon: "/assets/images/inventree-icon.webp" },
+    { cat: "AI",             name: "Ollama",          desc: "LLM Inference API",           sub: "ollama",       readme: "ai/ollama/README.md",                         icon: "/assets/images/ollama-icon.png" },
+    { cat: "AI",             name: "ComfyUI",         desc: "Image Generation",            sub: "comfyui",      readme: "ai/comfyui/README.md",                        icon: "/assets/images/comfyui-icon.webp" },
+    { cat: "Remote Access",  name: "WireGuard",       desc: "VPN Management",              sub: "wg",           readme: "remote_access/wg-easy/README.md",             icon: "/assets/images/wg-easy-icon.webp" },
+    { cat: "Remote Access",  name: "Cloudflare DDNS", desc: "Dynamic DNS",                 sub: "",             readme: "remote_access/cloudflare-ddns/README.md",     icon: "/assets/images/cloudflare-icon.png" },
+    { cat: "Infrastructure", name: "Garage",          desc: "S3-Compatible Object Store",  sub: "",             readme: "infrastructure/garage/README.md",              icon: "/assets/images/garage-icon.png" },
+    { cat: "Infrastructure", name: "LAN DNS",         desc: "Local Domain Name Server",    sub: "",             readme: "infrastructure/lan-dns/README.md",             icon: null },
+    { cat: "Infrastructure", name: "name-proxy",      desc: "Subdomain Reverse Proxy",     sub: "",             readme: "infrastructure/name-proxy/README.md",          icon: null },
   ];
 
   function getParentDomain() {
@@ -317,13 +326,15 @@
         const hasUi = Boolean(svc.sub);
         const serviceUrl = hasUi ? `http://${svc.sub}.${parent}` : readmeUrl;
         const newTab = !hasUi ? ' target="_blank" rel="noopener noreferrer"' : '';
-        const badge = svc.name[0].toUpperCase();
+        const iconHtml = svc.icon
+          ? `<img class="service-icon" src="${esc(svc.icon)}" alt="">`
+          : `<span class="badge">${esc(svc.name[0].toUpperCase())}</span>`;
 
         const li = document.createElement("li");
         li.className = "service-row" + (hasUi ? "" : " no-ui");
         li.innerHTML = `
           <a class="service-link" href="${esc(serviceUrl)}"${newTab}>
-            <span class="badge">${esc(badge)}</span>
+            ${iconHtml}
             <span class="service-name">${esc(svc.name)}</span>
             <span class="service-desc">${esc(svc.desc)}</span>
           </a>

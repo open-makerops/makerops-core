@@ -6,6 +6,10 @@ server {
     root  /usr/share/nginx/html/home;
     index index.html;
 
+    location /assets/ {
+        alias /usr/share/nginx/assets/;
+    }
+
     location / {
         try_files $uri $uri/ =404;
     }
