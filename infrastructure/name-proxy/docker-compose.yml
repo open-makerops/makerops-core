@@ -16,6 +16,8 @@ services:
       - "${PROXY_PORT:-80}:80"
     volumes:
       - ./nginx/templates:/etc/nginx/templates:ro
+      - ./html:/usr/share/nginx/html/home:ro
+      - ../../assets:/usr/share/nginx/html/home/assets:ro
     environment:
       # Scopes envsubst to only these variables so nginx runtime vars
       # ($host, $remote_addr, etc.) are left untouched in the rendered config.

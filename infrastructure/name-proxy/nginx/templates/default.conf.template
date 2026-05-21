@@ -1,3 +1,16 @@
+# ── MakerOps Home — Service Directory ─────────────────────────────────────────
+server {
+    listen      80;
+    server_name root.localhost ~^root\..+;
+
+    root  /usr/share/nginx/html/home;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+
 # Sets Connection header correctly for mixed WebSocket / plain-HTTP traffic.
 map $http_upgrade $connection_upgrade {
     default  upgrade;

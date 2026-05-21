@@ -70,6 +70,7 @@ All services are available on port 80 — the default HTTP port — so no port n
 
 | Subdomain | Service | Direct port equivalent |
 |---|---|---|
+| http://root.localhost | Home page — service directory | (static) |
 | http://n8n.localhost | n8n — Workflow Automation | http://localhost:5678 |
 | http://outline.localhost | Outline — Knowledge Base | http://localhost:3000 |
 | http://plane.localhost | Plane — Project Management | http://localhost:8100 |
@@ -110,6 +111,7 @@ Stops the container. name-proxy holds no persistent data, so nothing is lost.
 | File | Purpose |
 |---|---|
 | `.env` | Proxy listen port and per-service port overrides |
+| `html/index.html` | Static home page listing all services with links |
 | `.env.example` | Default configuration template |
 | `docker-compose.yml` | Single-container stack definition |
 | `nginx/templates/default.conf.template` | nginx virtual host config; `${VAR}` placeholders are substituted at container startup via `envsubst` |
@@ -133,6 +135,16 @@ Stops the container. name-proxy holds no persistent data, so nothing is lost.
 | `WG_PORT` | `8820` | `WG_UI_PORT` in `remote_access/wg-easy/.env` |
 
 Defaults match each service's default host port. A value here only needs changing if the corresponding service's host port was overridden.
+
+---
+
+## Home Page
+
+name-proxy serves a static service directory at `http://root.localhost` (or `http://root.HOSTNAME.TLD` on the LAN, e.g. `http://root.gamingpc.home`). Navigating there shows every service in the stack organised by category, with a live link to the service and a README link for each.
+
+Service links are built dynamically in the browser: the page strips the `root.` prefix from its own hostname and prefixes each service subdomain onto the remaining domain. Visiting `http://root.gamingpc.home` therefore generates links like `http://n8n.gamingpc.home`, `http://plane.gamingpc.home`, etc. — no hardcoded hostnames are needed. Services without a web UI (Garage, LAN DNS, Cloudflare DDNS, name-proxy) link directly to their GitHub README instead.
+
+The page is fully self-contained (no external CDNs) and works on air-gapped LANs. The source is at `html/index.html`; organisation imagery is served from `../../assets/` (the repo-root `assets/` directory) via a volume mount.
 
 ---
 

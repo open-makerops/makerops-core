@@ -22,6 +22,7 @@ docker compose -p "$PROJECT" up -d
 echo ""
 echo "name-proxy is running on port ${PROXY_PORT:-80}."
 echo ""
+echo "  http://root.localhost         → home page"
 echo "  http://n8n.localhost          → port ${N8N_PORT:-5678}"
 echo "  http://outline.localhost      → port ${OUTLINE_PORT:-3000}"
 echo "  http://plane.localhost        → port ${PLANE_PORT:-8100}"

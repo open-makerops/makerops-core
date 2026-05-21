@@ -66,7 +66,9 @@ services:
       TRIGGER_BOOTSTRAP_WORKER_GROUP_NAME: bootstrap
       TRIGGER_BOOTSTRAP_WORKER_TOKEN_PATH: /home/node/shared/worker_token
       INTERNAL_OTEL_TRACE_LOGGING_ENABLED: "0"
-      NODE_ENV: production
+      # "test" avoids the Secure cookie flag (which blocks HTTP-only LAN access)
+      # while still sending magic links via email (development mode auto-redirects instead).
+      NODE_ENV: test
 
   postgres:
     container_name: trigger_db
