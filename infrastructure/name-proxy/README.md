@@ -53,6 +53,17 @@ On **Windows** (native browser, not WSL2), subdomains of `.localhost` are not re
 
 ---
 
+## LAN Access
+
+name-proxy also accepts requests from other computers on the LAN using the pattern `SERVICE.HOSTNAME.TLD` (e.g. `n8n.central.home`, `outline.central.home`). The nginx config matches any hostname beginning with the service name, so no changes to name-proxy are needed when you choose a different hostname or TLD.
+
+LAN access requires:
+
+1. **name-proxy reachable on port 80** — ensure the host firewall allows TCP 80 from the LAN subnet.
+2. **DNS resolution** — edge clients must resolve `*.HOSTNAME.TLD` to this host's LAN IP. The companion [lan-dns](../lan-dns/README.md) service handles this with a dnsmasq container. See that README for full setup instructions including router configuration and per-client DNS setup.
+
+---
+
 ## Local Access
 
 All services are available on port 80 — the default HTTP port — so no port number is needed in the browser URL.

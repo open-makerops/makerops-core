@@ -1,0 +1,16 @@
+.:__DNS_PORT__ {
+    template IN A {
+        match ^[^.]+\.__HOST_NAME_REGEX__\.__LAN_TLD_REGEX__\.$
+        answer "{{ .Name }} 60 IN A __HOST_LAN_IP__"
+        fallthrough
+    }
+    template IN AAAA {
+        match ^[^.]+\.__HOST_NAME_REGEX__\.__LAN_TLD_REGEX__\.$
+        rcode NOERROR
+        fallthrough
+    }
+    forward . __UPSTREAM_DNS_1__ __UPSTREAM_DNS_2__
+    cache 30
+    errors
+    log
+}

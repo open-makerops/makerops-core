@@ -1,0 +1,27 @@
+# lan-dns — LAN DNS resolver for makerops-core services
+# Project name: lan-dns  (managed by start.sh / stop.sh)
+#
+# Runs dnsmasq to resolve *.HOST_NAME.LAN_TLD → HOST_LAN_IP so that any
+# LAN client configured to use this host as its DNS server can reach services
+# by name (n8n.central.home, outline.central.home, …) instead of by port.
+#
+# start.sh generates dnsmasq.conf from dnsmasq.conf.template before bringing
+# this service up.
+
+services:
+  lan-dns:
+    build: .
+    container_name: lan-dns
+    restart: unless-stopped
+    ports:
+      - "${DNS_PORT:-53}:53/udp"
+      - "${DNS_PORT:-53}:53/tcp"
+    volumes:
+      - ./dnsmasq.conf:/etc/dnsmasq.conf:ro
+    cap_add:
+      - NET_ADMIN
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"

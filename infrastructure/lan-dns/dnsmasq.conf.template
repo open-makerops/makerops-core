@@ -1,0 +1,24 @@
+# lan-dns dnsmasq configuration
+# Generated from dnsmasq.conf.template by start.sh — do not edit dnsmasq.conf directly.
+
+# Do not read /etc/resolv.conf; upstream servers are set explicitly below.
+no-resolv
+
+# Forward all non-local queries to these public resolvers.
+server=${UPSTREAM_DNS_1}
+server=${UPSTREAM_DNS_2}
+
+# Resolve *.${HOST_NAME}.${LAN_TLD} to the host's LAN IP.
+# Matches the base domain and all subdomains, so:
+#   n8n.${HOST_NAME}.${LAN_TLD}       → ${HOST_LAN_IP}
+#   outline.${HOST_NAME}.${LAN_TLD}   → ${HOST_LAN_IP}
+#   (etc.)
+address=/${HOST_NAME}.${LAN_TLD}/${HOST_LAN_IP}
+
+# Listen on all interfaces inside the container.
+listen-address=0.0.0.0
+bind-interfaces
+
+# Log queries to container stdout for debugging.
+log-queries
+log-facility=-

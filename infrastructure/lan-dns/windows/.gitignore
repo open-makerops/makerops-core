@@ -1,0 +1,6 @@
+coredns.exe
+coredns.pid
+Corefile
+.env
+coredns.log
+coredns-err.log

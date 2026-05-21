@@ -18,69 +18,69 @@ client_max_body_size 100m;
 # ── n8n — Workflow Automation ─────────────────────────────────────────────────
 server {
     listen      80;
-    server_name n8n.localhost;
+    server_name n8n.localhost ~^n8n\..+;
     location / { proxy_pass http://host.docker.internal:${N8N_PORT}; }
 }
 
 # ── Outline — Knowledge Base ──────────────────────────────────────────────────
 server {
     listen      80;
-    server_name outline.localhost;
+    server_name outline.localhost ~^outline\..+;
     location / { proxy_pass http://host.docker.internal:${OUTLINE_PORT}; }
 }
 
 # ── Plane — Project Management ────────────────────────────────────────────────
 server {
     listen      80;
-    server_name plane.localhost;
+    server_name plane.localhost ~^plane\..+;
     location / { proxy_pass http://host.docker.internal:${PLANE_PORT}; }
 }
 
 # ── trigger.dev — Background Jobs ────────────────────────────────────────────
 server {
     listen      80;
-    server_name trigger.localhost;
+    server_name trigger.localhost ~^trigger\..+;
     location / { proxy_pass http://host.docker.internal:${TRIGGERDEV_PORT}; }
 }
 
 # ── FreeScout — Help Desk ─────────────────────────────────────────────────────
 server {
     listen      80;
-    server_name freescout.localhost;
+    server_name freescout.localhost ~^freescout\..+;
     location / { proxy_pass http://host.docker.internal:${FREESCOUT_PORT}; }
 }
 
 # ── Invoice Ninja — Accounting ────────────────────────────────────────────────
 server {
     listen      80;
-    server_name invoiceninja.localhost;
+    server_name invoiceninja.localhost ~^invoiceninja\..+;
     location / { proxy_pass http://host.docker.internal:${INVOICENINJA_PORT}; }
 }
 
 # ── InvenTree — Inventory Management ─────────────────────────────────────────
 server {
     listen      80;
-    server_name inventree.localhost;
+    server_name inventree.localhost ~^inventree\..+;
     location / { proxy_pass http://host.docker.internal:${INVENTREE_PORT}; }
 }
 
 # ── Ollama — LLM Inference API ────────────────────────────────────────────────
 server {
     listen      80;
-    server_name ollama.localhost;
+    server_name ollama.localhost ~^ollama\..+;
     location / { proxy_pass http://host.docker.internal:${OLLAMA_PORT}; }
 }
 
 # ── ComfyUI — Image Generation ───────────────────────────────────────────────
 server {
     listen      80;
-    server_name comfyui.localhost;
+    server_name comfyui.localhost ~^comfyui\..+;
     location / { proxy_pass http://host.docker.internal:${COMFYUI_PORT}; }
 }
 
 # ── WireGuard (wg-easy) — VPN Management ─────────────────────────────────────
 server {
     listen      80;
-    server_name wg.localhost;
+    server_name wg.localhost ~^wg\..+;
     location / { proxy_pass http://host.docker.internal:${WG_PORT}; }
 }
