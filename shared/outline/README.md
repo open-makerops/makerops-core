@@ -107,6 +107,16 @@ Then restart: `./stop.sh && ./start.sh`
 
 Uncomment and fill in the `SMTP_*` section of `.env`. Outline will send magic-link emails for sign-in. Restart after changes.
 
+### Locked out? (logged out with no auth configured)
+
+If you log out before configuring an auth provider, the login page renders with no interactive elements. Use `recover-login.sh` to generate a one-time sign-in link directly from the database — no SMTP required:
+
+```bash
+./recover-login.sh your@email.com
+```
+
+Open the printed URL in your browser. After recovering access, configure SMTP above to prevent future lockouts.
+
 ---
 
 ## Files
