@@ -67,6 +67,17 @@ x-live-env: &live-env
   API_BASE_URL: ${API_BASE_URL:-http://api:8000}
   LIVE_SERVER_SECRET_KEY: "${LIVE_SERVER_SECRET_KEY}"
 
+x-email-env: &email-env
+  EMAIL_BACKEND: "${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}"
+  EMAIL_HOST: "${EMAIL_HOST:-}"
+  EMAIL_HOST_USER: "${EMAIL_HOST_USER:-}"
+  EMAIL_HOST_PASSWORD: "${EMAIL_HOST_PASSWORD:-}"
+  EMAIL_PORT: ${EMAIL_PORT:-587}
+  EMAIL_USE_TLS: "${EMAIL_USE_TLS:-True}"
+  EMAIL_USE_SSL: "${EMAIL_USE_SSL:-False}"
+  DEFAULT_FROM_EMAIL: "${DEFAULT_FROM_EMAIL:-}"
+  EMAIL_FROM: "${EMAIL_FROM:-}"
+
 x-app-env: &app-env
   WEB_URL: "${WEB_URL}"
   DEBUG: ${DEBUG:-0}
@@ -183,7 +194,7 @@ services:
     volumes:
       - ${PLANE_LOGS_MIGRATOR_PATH:-./data/logs/migrator}:/code/plane/logs
     environment:
-      <<: [*app-env, *db-env, *redis-env, *minio-env, *aws-s3-env, *proxy-env]
+      <<: [*app-env, *db-env, *redis-env, *minio-env, *aws-s3-env, *proxy-env, *email-env]
     networks:
       - plane
     depends_on:
@@ -202,7 +213,7 @@ services:
     volumes:
       - ${PLANE_LOGS_API_PATH:-./data/logs/api}:/code/plane/logs
     environment:
-      <<: [*app-env, *db-env, *redis-env, *minio-env, *aws-s3-env, *proxy-env]
+      <<: [*app-env, *db-env, *redis-env, *minio-env, *aws-s3-env, *proxy-env, *email-env]
     networks:
       - plane
     depends_on:
@@ -227,7 +238,7 @@ services:
     volumes:
       - ${PLANE_LOGS_WORKER_PATH:-./data/logs/worker}:/code/plane/logs
     environment:
-      <<: [*app-env, *db-env, *redis-env, *minio-env, *aws-s3-env, *proxy-env]
+      <<: [*app-env, *db-env, *redis-env, *minio-env, *aws-s3-env, *proxy-env, *email-env]
     networks:
       - plane
     depends_on:
@@ -242,7 +253,7 @@ services:
     volumes:
       - ${PLANE_LOGS_BEAT_PATH:-./data/logs/beat}:/code/plane/logs
     environment:
-      <<: [*app-env, *db-env, *redis-env, *minio-env, *aws-s3-env, *proxy-env]
+      <<: [*app-env, *db-env, *redis-env, *minio-env, *aws-s3-env, *proxy-env, *email-env]
     networks:
       - plane
     depends_on:

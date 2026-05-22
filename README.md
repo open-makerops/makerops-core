@@ -2,7 +2,7 @@
 
 ![MakerOps Core](assets/images/makerops-core-hero.png)
 
-A collection of self-hosted, open-source services for manufacturing operations, deployed locally via Docker Compose. Each service runs as an independent, fully isolated Docker Compose project.
+A collection of self-hosted, open-source and fair-use services for facilitating common business operations, deployed locally via Docker Compose. Each service runs as an independent*, fully isolated Docker Compose project.
 
 Services are organized by labor area:
 
@@ -196,7 +196,7 @@ Each service is a separate Docker Compose project with its own network, volumes,
 
 ## License
 
-MakerOps Core is licensed under the [MakerOps Software License v1.0](LICENSE).
+MakerOps Core is licensed under the [PolyForm Shield License 1.0.0](LICENSE).
 
 **Permitted:** Personal use, educational use, internal business operations, and setup/consulting services.
 **Prohibited:** Selling or sublicensing the software, integrating it into commercial products sold to others, or offering it as a hosted or managed service.
