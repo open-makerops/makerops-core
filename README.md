@@ -4,6 +4,56 @@
 
 A collection of self-hosted, open-source and fair-use services for facilitating common business operations, deployed locally via Docker Compose. Each service runs as an independent*, fully isolated Docker Compose project.
 
+## Key Considerations
+
+> [!IMPORTANT]
+> Review this section before deploying beyond initial local testing.
+
+### Docker is a Hard Requirement
+
+This stack runs entirely on [Docker](https://www.docker.com/) and Docker Compose. There is no alternative runtime — Docker must be installed on the host before any service can start.
+
+Install Docker for your platform:
+
+- [Docker Engine — Linux](https://docs.docker.com/engine/install/) — recommended for production hosts
+- [Docker Desktop — macOS](https://docs.docker.com/desktop/install/mac-install/) — includes Compose, a GUI, and resource controls
+- [Docker Desktop — Windows](https://docs.docker.com/desktop/install/windows-install/) — requires WSL 2 or Hyper-V
+
+Additional resources:
+
+- [Docker Compose overview](https://docs.docker.com/compose/)
+- [Managing data in Docker (volumes, bind mounts)](https://docs.docker.com/storage/)
+- [Container resource limits (CPU / memory)](https://docs.docker.com/engine/containers/resource_constraints/)
+- [Docker Hub — image registry](https://hub.docker.com/)
+
+### All Data is Written to the Host's Primary Drive by Default
+
+> [!WARNING]
+> Storing production data on a single drive with no redundancy is a significant risk. A drive failure means unrecoverable data loss.
+
+Service data volumes write to the host's primary drive out of the box. This is fine for local testing and sandboxing. For any production or team use, treat storage as a first-class concern:
+
+- **RAID** — [RAID levels explained (Prepressure)](https://www.prepressure.com/library/technology/raid) / [RAID Wikipedia](https://en.wikipedia.org/wiki/RAID) — RAID 1 mirrors data across two drives; RAID 5/6 adds parity for larger arrays
+- **NAS / network storage** — [TrueNAS](https://www.truenas.com/) (open-source NAS OS) / [Synology](https://www.synology.com/en-global/solution/small_business) — attach network volumes to Docker as bind mounts
+- **Off-site and cloud backup** — [Restic](https://restic.net/) (encrypted deduplicating backups) / [Backblaze B2](https://www.backblaze.com/cloud-storage) / [AWS S3 Glacier](https://aws.amazon.com/s3/glacier/)
+- **Docker volume backup** — [Official backup and restore guide](https://docs.docker.com/engine/storage/volumes/#back-up-restore-or-migrate-data-volumes)
+
+Each service exposes a data path variable in its `.env.example` so volumes can be redirected to a mounted drive or NAS share.
+
+### Several Services Offer Paid Cloud Plans
+
+Some services in this stack are also offered as vendor-managed SaaS products. The self-hosted versions included here are fully functional, but cloud plans provide managed infrastructure, automatic upgrades, enterprise SSO, compliance certifications, SLAs, and dedicated support — which may be preferable as teams grow.
+
+| Service | Pricing page |
+| ------- | ------------ |
+| [n8n](https://n8n.io) — workflow automation | [n8n Cloud plans](https://n8n.io/pricing/) |
+| [Outline](https://www.getoutline.com) — knowledge base | [Outline pricing](https://www.getoutline.com/pricing) |
+| [Invoice Ninja](https://invoiceninja.com) — invoicing | [Invoice Ninja plans](https://invoiceninja.com/pricing/) |
+| [Plane](https://plane.so) — project management | [Plane pricing](https://plane.so/pricing) |
+| [trigger.dev](https://trigger.dev) — background jobs | [trigger.dev pricing](https://trigger.dev/pricing) |
+
+---
+
 Services are organized by labor area:
 
 - [accounting/](accounting/README.md) — finance and billing staff
